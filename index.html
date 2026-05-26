@@ -3,24 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TMT Issue Tracker — Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>TMT — Issue Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-.pareto-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.pareto-label { width: 130px; font-size: 12px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pareto-track { flex: 1; background: var(--gray-border); border-radius: 3px; height: 14px; }
-.pareto-fill  { height: 14px; border-radius: 3px; background: var(--purple); }
-.pareto-count { font-size: 12px; font-weight: 500; color: var(--text); width: 24px; text-align: right; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media(max-width:640px){ .two-col{grid-template-columns:1fr;} }
+/* ── Mobile bottom nav ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
+.bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
+.bottom-nav a.active{color:var(--purple)}
+.bottom-nav a i{font-size:20px}
+@media(max-width:600px){
+  .bottom-nav{display:flex}
+  .topbar-nav{display:none}
+  .page{padding-bottom:80px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .topbar .btn{display:none}
+}
+
+/* ── Metric cards ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.metric{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:box-shadow .15s}
+.metric:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.metric.active-filter{outline:2px solid var(--purple)}
+.metric-label{font-size:11px;color:var(--text-sub);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.metric-value{font-size:30px;font-weight:600;line-height:1}
+.metric-sub{font-size:11px;color:var(--text-hint);margin-top:4px}
+
+/* ── Chart bars ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.pareto-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pareto-label{width:120px;font-size:12px;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.pareto-track{flex:1;background:var(--gray-border);border-radius:3px;height:16px;overflow:hidden}
+.pareto-fill{height:16px;border-radius:3px;background:var(--purple);transition:width .4s}
+.pareto-count{font-size:12px;font-weight:600;color:var(--text);width:20px;text-align:right;flex-shrink:0}
+.type-bar{margin-bottom:14px}
+.type-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;align-items:center}
+.type-track{background:var(--gray-border);border-radius:4px;height:18px;overflow:hidden}
+.type-fill{height:18px;border-radius:4px;transition:width .4s}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--gray-border);background:#fff;cursor:pointer;color:var(--text-sub);transition:all .15s}
+.filter-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.filter-btn:hover:not(.active){background:var(--gray-bg)}
+
+/* ── Issue cards ── */
+.issue-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;text-decoration:none;color:inherit;margin-bottom:8px;transition:box-shadow .15s}
+.issue-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.issue-card.open{border-left:3px solid var(--coral)}
+.issue-card.inprogress{border-left:3px solid #EF9F27}
+.issue-card.closed{border-left:3px solid var(--green)}
+.issue-body{flex:1;min-width:0}
+.issue-title{font-size:14px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.issue-meta{font-size:11px;color:var(--text-hint)}
+.issue-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.issue-assignee{font-size:11px;color:var(--text-sub)}
+
+/* ── Empty / loading ── */
+.dash-refresh{font-size:11px;color:var(--text-hint);display:flex;align-items:center;gap:5px;cursor:pointer}
+.dash-refresh:hover{color:var(--text-sub)}
 </style>
 </head>
 <body>
 
-<!-- Topbar -->
 <div class="topbar">
   <div class="topbar-brand">
     <div class="logo">TMT</div>
@@ -36,13 +83,17 @@
 </div>
 
 <div class="page">
-  <div class="page-header">
+
+  <!-- header -->
+  <div class="page-header" style="margin-bottom:16px">
     <div>
       <div class="page-title">Dashboard</div>
-      <div class="page-sub" id="last-updated">กำลังโหลด...</div>
+      <div class="dash-refresh" id="last-updated" onclick="loadIssues()">
+        <i class="fa-solid fa-rotate-right"></i> กำลังโหลด...
+      </div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <select id="filter-period" class="field" style="margin:0;padding:6px 28px 6px 10px;font-size:12px;border:1px solid var(--gray-border);border-radius:6px">
+      <select id="filter-period" style="border:1px solid var(--gray-border);border-radius:6px;padding:6px 28px 6px 10px;font-size:13px;background:#fff;font-family:inherit;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6a65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center">
         <option value="all">ทุกช่วงเวลา</option>
         <option value="7">7 วันล่าสุด</option>
         <option value="30" selected>30 วันล่าสุด</option>
@@ -51,32 +102,48 @@
     </div>
   </div>
 
-  <!-- Metrics -->
-  <div class="metrics" id="metrics">
-    <div class="metric"><div class="metric-label">ทั้งหมด</div><div class="metric-value v-all" id="m-total">—</div><div class="metric-sub">issues</div></div>
-    <div class="metric"><div class="metric-label">Open</div><div class="metric-value v-open" id="m-open">—</div><div class="metric-sub">ยังไม่เริ่มแก้</div></div>
-    <div class="metric"><div class="metric-label">In Progress</div><div class="metric-value v-prog" id="m-prog">—</div><div class="metric-sub">กำลังดำเนินการ</div></div>
-    <div class="metric"><div class="metric-label">Closed</div><div class="metric-value v-done" id="m-done">—</div><div class="metric-sub">แก้ไขเสร็จแล้ว</div></div>
+  <!-- metric cards — คลิกได้เพื่อ filter -->
+  <div class="metrics">
+    <div class="metric" onclick="setMetricFilter('all')" id="mc-all">
+      <div class="metric-label"><i class="fa-solid fa-list-ul" style="color:var(--purple)"></i> ทั้งหมด</div>
+      <div class="metric-value v-all" id="m-total">—</div>
+      <div class="metric-sub">issues</div>
+    </div>
+    <div class="metric" onclick="setMetricFilter('open')" id="mc-open">
+      <div class="metric-label"><i class="fa-solid fa-circle-exclamation" style="color:var(--coral)"></i> Open</div>
+      <div class="metric-value v-open" id="m-open">—</div>
+      <div class="metric-sub">รอดำเนินการ</div>
+    </div>
+    <div class="metric" onclick="setMetricFilter('inprogress')" id="mc-inprogress">
+      <div class="metric-label"><i class="fa-solid fa-arrow-right" style="color:var(--amber)"></i> In Progress</div>
+      <div class="metric-value v-prog" id="m-prog">—</div>
+      <div class="metric-sub">กำลังแก้ไข</div>
+    </div>
+    <div class="metric" onclick="setMetricFilter('closed')" id="mc-closed">
+      <div class="metric-label"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Closed</div>
+      <div class="metric-value v-done" id="m-done">—</div>
+      <div class="metric-sub">เสร็จแล้ว</div>
+    </div>
   </div>
 
-  <!-- Charts row -->
-  <div class="two-col" style="margin-bottom:24px">
+  <!-- charts -->
+  <div class="two-col">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="font-size:13px">ปัญหาที่เกิดบ่อย (Pareto)</div>
+      <div class="card-title" style="font-size:13px;margin-bottom:12px">ปัญหาที่เกิดบ่อย</div>
       <div id="pareto-list"><div class="loading">กำลังโหลด...</div></div>
     </div>
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="font-size:13px">แยกตามประเภท</div>
+      <div class="card-title" style="font-size:13px;margin-bottom:12px">แยกตามประเภท</div>
       <div id="type-list"><div class="loading">กำลังโหลด...</div></div>
     </div>
   </div>
 
-  <!-- Filter + Issue list -->
-  <div class="filter-bar">
+  <!-- filter + list -->
+  <div class="filter-bar" id="filter-bar">
     <button class="filter-btn active" data-status="all">ทั้งหมด</button>
-    <button class="filter-btn" data-status="open">Open</button>
-    <button class="filter-btn" data-status="inprogress">In Progress</button>
-    <button class="filter-btn" data-status="closed">Closed</button>
+    <button class="filter-btn" data-status="open">🔴 Open</button>
+    <button class="filter-btn" data-status="inprogress">🟡 In Progress</button>
+    <button class="filter-btn" data-status="closed">🟢 Closed</button>
     <button class="filter-btn" data-status="machine">เครื่องจักร</button>
     <button class="filter-btn" data-status="safety">Safety</button>
   </div>
@@ -84,9 +151,16 @@
   <div id="issue-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
 </div>
 
+<!-- Bottom nav mobile -->
+<nav class="bottom-nav">
+  <a href="index.html" class="active"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+  <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
+  <a href="update.html"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
+  <a href="admin.html"><i class="fa-solid fa-sliders"></i>Admin</a>
+</nav>
+
 <div class="toast" id="toast"></div>
 
-<!-- Firebase -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
 <script>
@@ -105,132 +179,131 @@ const db = firebase.firestore();
 let allIssues = [];
 let currentFilter = 'all';
 
-const periodEl = document.getElementById('filter-period');
-periodEl.addEventListener('change', loadIssues);
+document.getElementById('filter-period').addEventListener('change', loadIssues);
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    currentFilter = btn.dataset.status;
+    // sync metric highlight
+    document.querySelectorAll('.metric').forEach(m=>m.classList.remove('active-filter'));
+    const mc=document.getElementById('mc-'+btn.dataset.status);
+    if(mc) mc.classList.add('active-filter');
+    currentFilter=btn.dataset.status;
     renderList();
   });
 });
 
-async function loadIssues() {
-  try {
-    const days = parseInt(periodEl.value) || 0;
-    const snap = await db.collection('issues').get();
-    let allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (days > 0) {
-      const since = new Date();
-      since.setDate(since.getDate() - days);
-      allDocs = allDocs.filter(i => (i.createdAt?.toDate?.() || new Date(0)) >= since);
+function setMetricFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.status===f);
+  });
+  document.querySelectorAll('.metric').forEach(m=>m.classList.remove('active-filter'));
+  const mc=document.getElementById('mc-'+f);
+  if(mc) mc.classList.add('active-filter');
+  renderList();
+  document.getElementById('issue-list').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function loadIssues(){
+  try{
+    const days=parseInt(document.getElementById('filter-period').value)||0;
+    const snap=await db.collection('issues').get();
+    let docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(days>0){
+      const since=new Date(); since.setDate(since.getDate()-days);
+      docs=docs.filter(i=>(i.createdAt?.toDate?.()||new Date(0))>=since);
     }
-    allIssues = allDocs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    renderMetrics();
-    renderPareto();
-    renderTypeChart();
-    renderList();
-    document.getElementById('last-updated').textContent =
-      'อัพเดทล่าสุด: ' + new Date().toLocaleString('th-TH');
-  } catch(e) {
-    console.error(e);
-    document.getElementById('issue-list').innerHTML =
-      '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดข้อมูลได้ — ตรวจสอบ Firebase Config</div>';
+    allIssues=docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderMetrics(); renderPareto(); renderTypeChart(); renderList();
+    document.getElementById('last-updated').innerHTML=
+      '<i class="fa-solid fa-rotate-right"></i> อัพเดทล่าสุด: '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('issue-list').innerHTML=
+      '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i> โหลดไม่ได้ — ตรวจสอบ Firebase Config</div>';
   }
 }
 
-function renderMetrics() {
-  const total = allIssues.length;
-  const open  = allIssues.filter(i => i.status === 'open').length;
-  const prog  = allIssues.filter(i => i.status === 'inprogress').length;
-  const done  = allIssues.filter(i => i.status === 'closed').length;
-  document.getElementById('m-total').textContent = total;
-  document.getElementById('m-open').textContent  = open;
-  document.getElementById('m-prog').textContent  = prog;
-  document.getElementById('m-done').textContent  = done;
+function renderMetrics(){
+  const total=allIssues.length;
+  const open=allIssues.filter(i=>i.status==='open').length;
+  const prog=allIssues.filter(i=>i.status==='inprogress').length;
+  const done=allIssues.filter(i=>i.status==='closed').length;
+  document.getElementById('m-total').textContent=total;
+  document.getElementById('m-open').textContent=open;
+  document.getElementById('m-prog').textContent=prog;
+  document.getElementById('m-done').textContent=done;
 }
 
-function renderPareto() {
-  const counts = {};
-  allIssues.forEach(i => {
-    const k = i.machineName || i.category || 'ไม่ระบุ';
-    counts[k] = (counts[k] || 0) + 1;
+function renderPareto(){
+  const counts={};
+  allIssues.filter(i=>i.status!=='closed').forEach(i=>{
+    const k=i.machineName||i.lineName||'ไม่ระบุ';
+    counts[k]=(counts[k]||0)+1;
   });
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,6);
-  const max = sorted[0]?.[1] || 1;
-  const html = sorted.length === 0
-    ? '<div class="empty">ยังไม่มีข้อมูล</div>'
-    : sorted.map(([k,v]) => `
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('pareto-list').innerHTML=sorted.length===0
+    ?'<div class="empty" style="padding:20px 0">ไม่มี issue ที่เปิดอยู่</div>'
+    :sorted.map(([k,v])=>`
       <div class="pareto-bar">
         <div class="pareto-label" title="${k}">${k}</div>
         <div class="pareto-track"><div class="pareto-fill" style="width:${Math.round(v/max*100)}%"></div></div>
         <div class="pareto-count">${v}</div>
       </div>`).join('');
-  document.getElementById('pareto-list').innerHTML = html;
 }
 
-function renderTypeChart() {
-  const machine = allIssues.filter(i => i.issueType === 'machine').length;
-  const safety  = allIssues.filter(i => i.issueType === 'safety').length;
-  const total   = allIssues.length || 1;
-  document.getElementById('type-list').innerHTML = `
-    <div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+function renderTypeChart(){
+  const machine=allIssues.filter(i=>i.issueType==='machine').length;
+  const safety=allIssues.filter(i=>i.issueType==='safety').length;
+  const total=allIssues.length||1;
+  document.getElementById('type-list').innerHTML=`
+    <div class="type-bar">
+      <div class="type-row">
         <span><i class="fa-solid fa-gear" style="color:var(--purple)"></i> เครื่องจักร</span>
-        <span style="font-weight:500">${machine} issue</span>
+        <strong>${machine} issue</strong>
       </div>
-      <div style="background:var(--gray-border);border-radius:3px;height:16px">
-        <div style="height:16px;border-radius:3px;background:var(--purple);width:${Math.round(machine/total*100)}%"></div>
-      </div>
+      <div class="type-track"><div class="type-fill" style="width:${Math.round(machine/total*100)}%;background:var(--purple)"></div></div>
     </div>
-    <div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-        <span><i class="fa-solid fa-triangle-exclamation" style="color:var(--coral)"></i> Safety / อุบัติเหตุ</span>
-        <span style="font-weight:500">${safety} issue</span>
+    <div class="type-bar">
+      <div class="type-row">
+        <span><i class="fa-solid fa-triangle-exclamation" style="color:var(--coral)"></i> Safety</span>
+        <strong>${safety} issue</strong>
       </div>
-      <div style="background:var(--gray-border);border-radius:3px;height:16px">
-        <div style="height:16px;border-radius:3px;background:var(--coral);width:${Math.round(safety/total*100)}%"></div>
-      </div>
+      <div class="type-track"><div class="type-fill" style="width:${Math.round(safety/total*100)}%;background:var(--coral)"></div></div>
     </div>
-    <div style="margin-top:16px;font-size:12px;color:var(--text-hint);text-align:center">${total} issues รวมทั้งหมด</div>
-  `;
+    <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--text-hint)">${total} issues รวมทั้งหมด</div>`;
 }
 
-function renderList() {
-  let filtered = allIssues;
-  if (currentFilter === 'open')      filtered = allIssues.filter(i => i.status === 'open');
-  else if (currentFilter === 'inprogress') filtered = allIssues.filter(i => i.status === 'inprogress');
-  else if (currentFilter === 'closed')  filtered = allIssues.filter(i => i.status === 'closed');
-  else if (currentFilter === 'machine') filtered = allIssues.filter(i => i.issueType === 'machine');
-  else if (currentFilter === 'safety')  filtered = allIssues.filter(i => i.issueType === 'safety');
+function renderList(){
+  let filtered=allIssues;
+  if(currentFilter==='open')       filtered=allIssues.filter(i=>i.status==='open');
+  else if(currentFilter==='inprogress') filtered=allIssues.filter(i=>i.status==='inprogress');
+  else if(currentFilter==='closed')     filtered=allIssues.filter(i=>i.status==='closed');
+  else if(currentFilter==='machine')    filtered=allIssues.filter(i=>i.issueType==='machine');
+  else if(currentFilter==='safety')     filtered=allIssues.filter(i=>i.issueType==='safety');
 
-  if (filtered.length === 0) {
-    document.getElementById('issue-list').innerHTML = '<div class="empty">ไม่พบ issue</div>';
-    return;
+  if(filtered.length===0){
+    document.getElementById('issue-list').innerHTML='<div class="empty">ไม่พบ issue</div>'; return;
   }
-
-  const html = filtered.map(issue => {
-    const isIcon  = issue.issueType === 'safety' ? 'fa-triangle-exclamation' : 'fa-gear';
-    const iconCls = issue.issueType === 'safety' ? 'icon-safety' : 'icon-machine';
-    const statusLabel = { open:'Open', inprogress:'In Progress', closed:'Closed' }[issue.status] || issue.status;
-    const badgeCls = `badge-${issue.status}`;
-    const date = issue.createdAt?.toDate?.()?.toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'2-digit'}) || '—';
-    return `
-      <a class="issue-card ${issue.status}" href="update.html?id=${issue.id}">
-        <div class="issue-icon ${iconCls}"><i class="fa-solid ${isIcon}"></i></div>
-        <div class="issue-body">
-          <div class="issue-title">${issue.title || '(ไม่มีชื่อ)'}</div>
-          <div class="issue-meta">${issue.lineName || '—'} · ${issue.machineName || '—'} · #${issue.id.slice(-6).toUpperCase()} · ${date}</div>
-        </div>
-        <div class="issue-right">
-          <span class="badge ${badgeCls}">${statusLabel}</span>
-          <span class="issue-assignee">${issue.assignee || '—'}</span>
-        </div>
-      </a>`;
+  document.getElementById('issue-list').innerHTML=filtered.map(i=>{
+    const isIcon=i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear';
+    const iconCls=i.issueType==='safety'?'icon-safety':'icon-machine';
+    const slabel={open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status;
+    const date=i.createdAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})||'—';
+    return`<a class="issue-card ${i.status}" href="update.html?id=${i.id}">
+      <div class="issue-icon ${iconCls}"><i class="fa-solid ${isIcon}"></i></div>
+      <div class="issue-body">
+        <div class="issue-title">${i.title||'(ไม่มีชื่อ)'}</div>
+        <div class="issue-meta">${i.lineName||'—'} · ${i.machineName||'—'} · ${date}</div>
+      </div>
+      <div class="issue-right">
+        <span class="badge badge-${i.status}">${slabel}</span>
+        <span class="issue-assignee">${i.assignee||'—'}</span>
+      </div>
+    </a>`;
   }).join('');
-  document.getElementById('issue-list').innerHTML = html;
 }
 
 loadIssues();
