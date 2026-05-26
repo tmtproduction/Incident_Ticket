@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT — ห้องประชุม</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+body{background:var(--gray-bg)}
+/* Admin section */
+.admin-bar{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.admin-bar-title{font-size:13px;font-weight:600;flex:1}
+.btn-shuffle{background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.btn-shuffle:hover{background:var(--purple-text)}
+.btn-shuffle:disabled{opacity:.5}
+
+/* Present mode */
+.present-header{text-align:center;padding:16px 0 8px}
+.present-num{font-size:13px;color:var(--text-sub);margin-bottom:4px}
+.present-title{font-size:20px;font-weight:600;margin-bottom:6px}
+.present-meta{font-size:12px;color:var(--text-hint)}
+
+/* Nav */
+.present-nav{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}
+.nav-btn{padding:10px 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--gray-border);background:#fff;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s}
+.nav-btn:hover{background:var(--gray-bg)}
+.nav-btn.primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.nav-btn.primary:hover{background:var(--purple-text)}
+.nav-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Proposal detail */
+.prop-detail{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.prop-detail-title{font-size:15px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.detail-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:500px){.detail-row{grid-template-columns:1fr}}
+.detail-item label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hint);display:block;margin-bottom:3px}
+.detail-item span{font-size:13px;font-weight:500}
+.detail-text{font-size:13px;color:var(--text-sub);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--gray-border)}
+
+/* Comments */
+.comments-section{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.comments-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.reviewer-status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.rstatus{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:10px}
+.rstatus.done{background:var(--green-light);color:var(--green-text)}
+.rstatus.wait{background:var(--amber-light);color:var(--amber-text)}
+
+.comment-item{padding:10px 0;border-bottom:1px solid var(--gray-border)}
+.comment-item:last-child{border-bottom:none;padding-bottom:0}
+.comment-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.comment-who{font-size:12px;font-weight:500}
+.comment-machine{font-size:11px;color:var(--text-hint);background:var(--gray-bg);padding:1px 7px;border-radius:10px}
+.comment-text{font-size:13px;color:var(--text-sub);line-height:1.5}
+
+/* Comment form */
+.comment-form{background:var(--gray-bg);border-radius:var(--radius-sm);padding:12px;margin-top:12px}
+.comment-form-title{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text-sub)}
+.comment-form .form-grid{grid-template-columns:1fr 1fr;gap:8px}
+.comment-form textarea{min-height:60px;font-size:13px}
+
+/* Approve section */
+.approve-section{background:#fff;border:2px solid var(--green);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.approve-title{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--green-text)}
+.approve-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-approve{background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.btn-approve:hover{background:var(--green-text)}
+.btn-reject{background:transparent;color:var(--coral-text);border:1px solid var(--coral-light);border-radius:var(--radius-sm);padding:10px 20px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.btn-reject:hover{background:var(--coral-light)}
+
+/* Dot steps */
+.step-dots{display:flex;justify-content:center;gap:8px;margin-bottom:8px}
+.sdot{width:10px;height:10px;border-radius:50%;background:var(--gray-border);transition:all .2s}
+.sdot.active{background:var(--purple);transform:scale(1.3)}
+.sdot.done{background:var(--green)}
+
+/* Empty / done state */
+.meeting-empty{text-align:center;padding:48px 20px;color:var(--text-hint)}
+.meeting-empty i{font-size:40px;margin-bottom:12px;display:block;color:var(--gray-border)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand"><div class="logo">TMT</div><span>Issue Tracker</span></div>
+  <nav class="topbar-nav">
+    <a href="index.html"><i class="fa-solid fa-table-columns"></i> Kanban</a>
+    <a href="propose.html"><i class="fa-solid fa-lightbulb"></i> เสนอปัญหา</a>
+    <a href="present.html" class="active"><i class="fa-solid fa-person-chalkboard"></i> ประชุม</a>
+    <a href="update.html"><i class="fa-solid fa-pen-to-square"></i> อัพเดท</a>
+    <a href="tasks.html"><i class="fa-solid fa-list-check"></i> Tasks</a>
+    <a href="admin.html"><i class="fa-solid fa-sliders"></i> Admin</a>
+  </nav>
+</div>
+
+<div class="page" style="max-width:720px">
+
+  <!-- Admin bar -->
+  <div class="admin-bar">
+    <div>
+      <div class="admin-bar-title"><i class="fa-solid fa-shield-halved" style="color:var(--purple)"></i> Admin — จัดการประชุม</div>
+      <div style="font-size:11px;color:var(--text-hint)" id="admin-status">กำลังโหลด...</div>
+    </div>
+    <button class="btn-shuffle" id="btn-shuffle" onclick="shuffleAndLock()" disabled>
+      <i class="fa-solid fa-shuffle"></i> สุ่ม + Lock ลำดับ
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="resetMeeting()" title="รีเซ็ตการประชุม (ส่งทุกอย่างกลับ pending)">
+      <i class="fa-solid fa-rotate-left"></i> รีเซ็ต
+    </button>
+  </div>
+
+  <!-- Step dots -->
+  <div class="step-dots" id="step-dots"></div>
+
+  <!-- Main present area -->
+  <div id="meeting-area">
+    <div class="meeting-empty">
+      <i class="fa-solid fa-circle-notch fa-spin"></i>
+      <div>กำลังโหลด...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",authDomain:"tmt-issue-tracker.firebaseapp.com",projectId:"tmt-issue-tracker",storageBucket:"tmt-issue-tracker.firebasestorage.app",messagingSenderId:"848414004186",appId:"1:848414004186:web:1ebf821c8a2dbe89e566e3"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+</script>
+<script>
+let queue=[]; // sorted proposals
+let currentIdx=0;
+let allMachines=[];
+
+function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+// ── Fisher-Yates shuffle ──
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ── Load machines for reviewer pool ──
+async function loadMachines(){
+  try{
+    const snap=await db.collection('master_machines').get();
+    allMachines=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){}
+}
+
+// ── Shuffle and lock order ──
+async function shuffleAndLock(){
+  if(!confirm('สุ่มลำดับและ lock ข้อเสนอทั้งหมดใน Pending?\n(ข้อเสนอใหม่หลังจากนี้จะไม่อยู่ในรอบนี้)')) return;
+  const btn=document.getElementById('btn-shuffle');
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังสุ่ม...';
+  try{
+    const snap=await db.collection('proposals').where('status','==','pending').get();
+    const pending=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(pending.length===0){showToast('ไม่มีข้อเสนอใน pending');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-shuffle"></i> สุ่ม + Lock ลำดับ';return;}
+
+    const shuffled=shuffle(pending);
+    const batch=db.batch();
+    shuffled.forEach((p,i)=>{
+      // สุ่ม 2 reviewer machines จาก machines ที่ไม่ใช่ machine ของ proposal นั้น
+      const pool=allMachines.filter(m=>m.id!==p.machineId);
+      const reviewers=shuffle(pool).slice(0,2).map(m=>({machineId:m.id,machineName:m.name}));
+      batch.update(db.collection('proposals').doc(p.id),{
+        status:'queued',
+        presentOrder:i+1,
+        reviewers,
+        comments:[],
+        lockedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    await batch.commit();
+    showToast(`✅ Lock แล้ว ${shuffled.length} ข้อเสนอ`);
+    currentIdx=0;
+    loadMeeting();
+  }catch(e){showToast('❌ สุ่มไม่สำเร็จ: '+e.message);}
+  finally{btn.innerHTML='<i class="fa-solid fa-shuffle"></i> สุ่ม + Lock ลำดับ';}
+}
+
+// ── Load meeting queue ──
+async function loadMeeting(){
+  try{
+    const [qSnap,pSnap]=await Promise.all([
+      db.collection('proposals').where('status','==','queued').get(),
+      db.collection('proposals').where('status','==','pending').get()
+    ]);
+    queue=qSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.presentOrder||0)-(b.presentOrder||0));
+    const pendingCount=pSnap.size;
+
+    // admin status
+    if(queue.length>0){
+      document.getElementById('admin-status').textContent=`ลำดับถูก lock แล้ว ${queue.length} ข้อเสนอ`;
+      document.getElementById('btn-shuffle').disabled=true;
+    } else {
+      document.getElementById('btn-shuffle').disabled=pendingCount===0;
+      document.getElementById('admin-status').textContent=pendingCount>0?`มีข้อเสนอ pending ${pendingCount} รายการ — พร้อมสุ่ม`:'ไม่มีข้อเสนอ pending';
+    }
+
+    renderDots();
+    renderCurrent();
+  }catch(e){
+    document.getElementById('meeting-area').innerHTML='<div class="meeting-empty"><i class="fa-solid fa-triangle-exclamation"></i><div>โหลดไม่ได้: '+e.message+'</div></div>';
+  }
+}
+
+function renderDots(){
+  if(queue.length===0){document.getElementById('step-dots').innerHTML='';return;}
+  document.getElementById('step-dots').innerHTML=queue.map((p,i)=>{
+    const cls=p.status==='presented'?'done':i===currentIdx?'active':'';
+    return`<div class="sdot ${cls}" title="${p.title||''}" onclick="jumpTo(${i})" style="cursor:pointer"></div>`;
+  }).join('');
+}
+
+function jumpTo(i){currentIdx=i;renderCurrent();}
+
+function renderCurrent(){
+  const area=document.getElementById('meeting-area');
+  if(queue.length===0){
+    area.innerHTML=`<div class="meeting-empty">
+      <i class="fa-solid fa-check-circle" style="color:var(--green)"></i>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">ไม่มีข้อเสนอในคิว</div>
+      <div>Admin กด "สุ่ม + Lock" เพื่อเริ่มการประชุม<br>หรือพนักงานส่งข้อเสนอที่หน้า <a href="propose.html">เสนอปัญหา</a></div>
+    </div>`;
+    return;
+  }
+
+  const p=queue[currentIdx];
+  const sevMap={low:'🟢 Low',medium:'🟡 Medium',high:'🔴 High'};
+  const typeLabel=p.type==='safety'?'⚠️ Safety':'🔧 เครื่องจักร';
+  const comments=p.comments||[];
+  const reviewers=p.reviewers||[];
+  const allCommented=reviewers.length>0&&reviewers.every(r=>comments.some(c=>c.reviewerMachineId===r.machineId));
+  const isPresented=p.status==='presented';
+
+  const reviewerStatus=reviewers.map(r=>{
+    const c=comments.find(x=>x.reviewerMachineId===r.machineId);
+    return`<div class="rstatus ${c?'done':'wait'}"><i class="fa-solid ${c?'fa-check':'fa-clock'}"></i> ${r.machineName}</div>`;
+  }).join('');
+
+  const commentItems=comments.map(c=>`
+    <div class="comment-item">
+      <div class="comment-header">
+        <span class="comment-who">${c.commenterName||'—'}</span>
+        <span class="comment-machine">${c.reviewerMachineName||c.reviewerMachineId||'—'}</span>
+      </div>
+      <div class="comment-text">${c.text||'—'}</div>
+    </div>`).join('');
+
+  area.innerHTML=`
+    <div class="present-header">
+      <div class="present-num">ข้อเสนอที่ ${p.presentOrder} / ${queue.length}</div>
+      <div class="present-title">${p.title||'—'}</div>
+      <div class="present-meta">${p.lineName||'—'} · ${p.machineName||'—'} · โดย ${p.reporter||'—'} · ${typeLabel} · ${sevMap[p.severity]||''}</div>
+    </div>
+
+    <div class="prop-detail">
+      <div class="prop-detail-title"><i class="fa-solid fa-file-lines" style="color:var(--purple)"></i> รายละเอียดข้อเสนอ</div>
+      <div class="detail-row">
+        <div class="detail-item"><label>ไลน์ / กลุ่ม</label><span>${p.lineName||'—'}</span></div>
+        <div class="detail-item"><label>เครื่องจักร</label><span>${p.machineName||'—'}</span></div>
+      </div>
+      <div class="detail-text"><strong>ปัญหา:</strong> ${p.description||'—'}</div>
+      ${p.proposedSolution?`<div class="detail-text"><strong>แนวทางแก้ไขที่เสนอ:</strong> ${p.proposedSolution}</div>`:''}
+    </div>
+
+    <div class="comments-section">
+      <div class="comments-title">
+        <span><i class="fa-solid fa-comments" style="color:var(--teal,#1D9E75)"></i> ความเห็นจากทีม reviewer</span>
+        <span style="font-size:11px;color:var(--text-hint)">${comments.length}/${reviewers.length} ทีม comment แล้ว</span>
+      </div>
+      <div class="reviewer-status">${reviewerStatus||'<span style="font-size:12px;color:var(--text-hint)">ยังไม่มี reviewer</span>'}</div>
+      ${commentItems?`<div>${commentItems}</div>`:'<div style="font-size:12px;color:var(--text-hint);padding:6px 0">ยังไม่มี comment</div>'}
+
+      ${!isPresented?`
+      <div class="comment-form">
+        <div class="comment-form-title"><i class="fa-solid fa-pen"></i> เพิ่ม Comment (สำหรับ reviewer)</div>
+        <div class="form-grid comment-form" style="padding:0;background:none;margin-bottom:8px">
+          <div class="field">
+            <label>ชื่อผู้ comment *</label>
+            <input type="text" id="c-name" placeholder="ชื่อ-นามสกุล">
+          </div>
+          <div class="field">
+            <label>ทีมของคุณ (เครื่องจักร) *</label>
+            <select id="c-machine">
+              <option value="">— เลือกเครื่องจักรของคุณ —</option>
+              ${reviewers.map(r=>`<option value="${r.machineId}" data-name="${r.machineName}">${r.machineName}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:8px">
+          <label>ความเห็น *</label>
+          <textarea id="c-text" placeholder="ความเห็น ข้อเสนอแนะ หรือคำถามเพิ่มเติม..."></textarea>
+        </div>
+        <div style="text-align:right">
+          <button class="btn btn-primary btn-sm" onclick="submitComment('${p.id}')"><i class="fa-solid fa-paper-plane"></i> ส่ง Comment</button>
+        </div>
+      </div>`:'<div style="font-size:12px;color:var(--text-hint);margin-top:8px">ปิดรับ comment แล้ว (นำเสนอเสร็จแล้ว)</div>'}
+    </div>
+
+    ${!isPresented?`
+    <div class="approve-section">
+      <div class="approve-title"><i class="fa-solid fa-gavel"></i> ผลการพิจารณา (หัวหน้า/Admin)</div>
+      <div class="field" style="margin-bottom:12px">
+        <label>ผู้รับผิดชอบ (Assign ให้)</label>
+        <select id="ap-assignee" style="font-size:14px">
+          <option value="">— เลือกผู้รับผิดชอบ —</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>หมายเหตุจากที่ประชุม</label>
+        <textarea id="ap-note" placeholder="สรุปมติที่ประชุม คำแนะนำ หรือเงื่อนไข..."></textarea>
+      </div>
+      <div class="approve-actions">
+        <button class="btn-approve" onclick="approveProposal('${p.id}',true)"><i class="fa-solid fa-check"></i> Approve → เปิด Issue</button>
+        <button class="btn-reject" onclick="approveProposal('${p.id}',false)"><i class="fa-solid fa-xmark"></i> ไม่ผ่าน</button>
+      </div>
+    </div>`:`
+    <div style="background:var(--green-light);border-radius:var(--radius);padding:12px 16px;text-align:center;color:var(--green-text);font-weight:500">
+      <i class="fa-solid fa-circle-check"></i> ข้อเสนอนี้นำเสนอเสร็จแล้ว
+    </div>`}
+
+    <div class="present-nav">
+      <button class="nav-btn" onclick="navigate(-1)" ${currentIdx===0?'disabled':''}>
+        <i class="fa-solid fa-arrow-left"></i> ก่อนหน้า
+      </button>
+      <span style="font-size:13px;color:var(--text-sub);min-width:80px;text-align:center">${currentIdx+1} / ${queue.length}</span>
+      <button class="nav-btn primary" onclick="navigate(1)" ${currentIdx===queue.length-1?'disabled':''}>
+        ถัดไป <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>`;
+
+  // load persons for assignee select
+  loadPersonsInto('ap-assignee');
+}
+
+function navigate(dir){
+  currentIdx=Math.max(0,Math.min(queue.length-1,currentIdx+dir));
+  renderDots();
+  renderCurrent();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function loadPersonsInto(selId){
+  const sel=document.getElementById(selId);
+  if(!sel) return;
+  try{
+    const snap=await db.collection('master_persons').get();
+    const persons=snap.docs.map(d=>d.data()).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    sel.innerHTML='<option value="">— เลือกผู้รับผิดชอบ —</option>'+persons.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  }catch(e){}
+}
+
+// ── Submit comment ──
+async function submitComment(proposalId){
+  const name=document.getElementById('c-name').value.trim();
+  const machSel=document.getElementById('c-machine');
+  const machineId=machSel.value;
+  const machineName=machSel.selectedOptions[0]?.dataset?.name||machSel.selectedOptions[0]?.text||'';
+  const text=document.getElementById('c-text').value.trim();
+  if(!name||!machineId||!text){showToast('⚠️ กรอกชื่อ เลือกทีม และใส่ความเห็นด้วย');return;}
+
+  try{
+    const ref=db.collection('proposals').doc(proposalId);
+    const doc=await ref.get();
+    const existing=doc.data()?.comments||[];
+    // ไม่ให้ comment ซ้ำจาก machine เดิม
+    if(existing.some(c=>c.reviewerMachineId===machineId)){showToast('⚠️ ทีมนี้ comment ไปแล้ว');return;}
+    const newComment={commenterName:name,reviewerMachineId:machineId,reviewerMachineName:machineName,text,createdAt:new Date().toISOString()};
+    await ref.update({comments:firebase.firestore.FieldValue.arrayUnion(newComment)});
+    showToast('✅ บันทึก comment แล้ว');
+    // refresh current proposal in queue
+    const updated=await ref.get();
+    queue[currentIdx]={id:updated.id,...updated.data()};
+    renderCurrent();
+  }catch(e){showToast('❌ บันทึกไม่ได้: '+e.message);}
+}
+
+// ── Approve / Reject ──
+async function approveProposal(proposalId,approved){
+  const assignee=document.getElementById('ap-assignee')?.value||'';
+  const note=document.getElementById('ap-note')?.value.trim()||'';
+  if(approved&&!assignee){showToast('⚠️ เลือกผู้รับผิดชอบก่อน approve');return;}
+
+  const confirmMsg=approved?`Approve และเปิด Issue มอบหมายให้ ${assignee}?`:'ไม่ผ่าน — ส่งกลับ pending?';
+  if(!confirm(confirmMsg)) return;
+
+  try{
+    const ref=db.collection('proposals').doc(proposalId);
+    if(approved){
+      // สร้าง issue จริง
+      await db.collection('issues').add({
+        issueType:queue[currentIdx].type||'machine',
+        reporter:queue[currentIdx].reporter||'',
+        lineId:queue[currentIdx].lineId||'',
+        lineName:queue[currentIdx].lineName||'',
+        machineName:queue[currentIdx].machineName||'',
+        title:queue[currentIdx].title||'',
+        description:queue[currentIdx].description||'',
+        initialAction:queue[currentIdx].proposedSolution||'',
+        assignee,
+        severity:queue[currentIdx].severity||'medium',
+        status:'open',
+        meetingNote:note,
+        proposalId,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await ref.update({status:'approved',assignee,meetingNote:note,approvedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      showToast('✅ Approve แล้ว — Issue เปิดแล้ว');
+    } else {
+      await ref.update({status:'pending',presentOrder:null,reviewers:[],comments:[],lockedAt:null});
+      showToast('ส่งกลับ pending แล้ว');
+    }
+    queue[currentIdx].status=approved?'approved':'pending';
+    renderDots();
+    renderCurrent();
+  }catch(e){showToast('❌ บันทึกไม่ได้: '+e.message);}
+}
+
+// ── Reset meeting ──
+async function resetMeeting(){
+  if(!confirm('รีเซ็ตการประชุม? ข้อเสนอทั้งหมดใน queue จะกลับไป pending')) return;
+  try{
+    const snap=await db.collection('proposals').where('status','==','queued').get();
+    const batch=db.batch();
+    snap.docs.forEach(d=>{batch.update(d.ref,{status:'pending',presentOrder:null,reviewers:[],comments:[],lockedAt:null});});
+    await batch.commit();
+    showToast('รีเซ็ตแล้ว');
+    queue=[];currentIdx=0;
+    loadMeeting();
+  }catch(e){showToast('❌ รีเซ็ตไม่ได้: '+e.message);}
+}
+
+loadMachines();
+loadMeeting();
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT — เสนอปัญหา</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
+.bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
+.bottom-nav a.active{color:var(--purple)}
+.bottom-nav a i{font-size:20px}
+@media(max-width:600px){.bottom-nav{display:flex}.topbar-nav{display:none}.page{padding-bottom:80px}}
+
+.tab-row{display:flex;border-bottom:1px solid var(--gray-border);margin-bottom:20px}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-sub);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+/* proposal cards */
+.prop-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px}
+.prop-card.pending{border-left:3px solid #EF9F27}
+.prop-card.queued{border-left:3px solid var(--purple)}
+.prop-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.pi-machine{background:var(--purple-light);color:var(--purple)}
+.pi-safety{background:var(--coral-light);color:var(--coral-text)}
+.prop-body{flex:1;min-width:0}
+.prop-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.prop-meta{font-size:11px;color:var(--text-hint)}
+.prop-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.order-badge{font-size:13px;font-weight:700;color:var(--purple);background:var(--purple-light);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* comment chips under pending card */
+.reviewer-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-border)}
+.rchip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.rchip.done{background:var(--green-light);color:var(--green-text)}
+.rchip.wait{background:var(--amber-light);color:var(--amber-text)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand"><div class="logo">TMT</div><span>Issue Tracker</span></div>
+  <nav class="topbar-nav">
+    <a href="index.html"><i class="fa-solid fa-table-columns"></i> Kanban</a>
+    <a href="propose.html" class="active"><i class="fa-solid fa-lightbulb"></i> เสนอปัญหา</a>
+    <a href="present.html"><i class="fa-solid fa-person-chalkboard"></i> ประชุม</a>
+    <a href="update.html"><i class="fa-solid fa-pen-to-square"></i> อัพเดท</a>
+    <a href="tasks.html"><i class="fa-solid fa-list-check"></i> Tasks</a>
+    <a href="admin.html"><i class="fa-solid fa-sliders"></i> Admin</a>
+  </nav>
+  <button class="btn btn-primary btn-sm" onclick="switchTab('submit')"><i class="fa-solid fa-plus"></i> เสนอปัญหาใหม่</button>
+</div>
+
+<div class="page" style="max-width:680px">
+  <div class="page-header" style="margin-bottom:14px">
+    <div><div class="page-title">เสนอปัญหา / Improvement</div><div class="page-sub">ส่งข้อเสนอเพื่อนำเสนอในที่ประชุม</div></div>
+  </div>
+
+  <div class="tab-row">
+    <div class="tab active" id="tab-submit" onclick="switchTab('submit')"><i class="fa-solid fa-plus"></i> เสนอปัญหาใหม่</div>
+    <div class="tab" id="tab-pending" onclick="switchTab('pending')"><i class="fa-solid fa-clock"></i> รอ Pending (<span id="cnt-pending">0</span>)</div>
+    <div class="tab" id="tab-queue" onclick="switchTab('queue')"><i class="fa-solid fa-list-ol"></i> คิว Present (<span id="cnt-queue">0</span>)</div>
+  </div>
+
+  <!-- ══ TAB: SUBMIT ══ -->
+  <div id="view-submit">
+    <div class="card">
+      <div class="card-title">ข้อมูลพื้นฐาน</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>ประเภทปัญหา *</label>
+          <select id="p-type" onchange="onTypeChange()">
+            <option value="">— เลือก —</option>
+            <option value="machine">🔧 เครื่องจักร</option>
+            <option value="safety">⚠️ Safety</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ชื่อผู้เสนอ *</label>
+          <input type="text" id="p-reporter" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="field">
+          <label>ไลน์ / กลุ่ม *</label>
+          <select id="p-line" onchange="onLineChange()">
+            <option value="">— กำลังโหลด —</option>
+          </select>
+        </div>
+        <div class="field" id="p-machine-field">
+          <label>เครื่องจักรที่เกี่ยวข้อง *</label>
+          <select id="p-machine">
+            <option value="">— เลือกไลน์ก่อน —</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>หัวข้อปัญหา *</label>
+          <input type="text" id="p-title" placeholder="สรุปปัญหาหรือสิ่งที่ต้องการปรับปรุงสั้น ๆ">
+        </div>
+        <div class="field full">
+          <label>รายละเอียด *</label>
+          <textarea id="p-desc" placeholder="อธิบายปัญหา สาเหตุที่คาดว่าเกิด และผลกระทบต่อการผลิต" style="min-height:80px"></textarea>
+        </div>
+        <div class="field full">
+          <label>แนวทางแก้ไขที่เสนอ</label>
+          <textarea id="p-solution" placeholder="ระบุแนวทางแก้ไขหรือไอเดียการปรับปรุง (ถ้ามี)"></textarea>
+        </div>
+        <div class="field">
+          <label>ระดับความเร่งด่วน</label>
+          <select id="p-sev">
+            <option value="low">🟢 Low</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="high">🔴 High</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="submitProposal()"><i class="fa-solid fa-paper-plane"></i> ส่งข้อเสนอ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: PENDING ══ -->
+  <div id="view-pending" style="display:none">
+    <div style="background:var(--amber-light);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--amber-text)">
+      <i class="fa-solid fa-clock"></i> ข้อเสนอในสถานะ Pending รอ Admin สุ่มลำดับและ lock ก่อนประชุม → ไปที่หน้า <a href="present.html" style="color:var(--amber-text);font-weight:600">ประชุม</a>
+    </div>
+    <div id="pending-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
+  </div>
+
+  <!-- ══ TAB: QUEUE ══ -->
+  <div id="view-queue" style="display:none">
+    <div style="background:var(--purple-light);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--purple-text)">
+      <i class="fa-solid fa-list-ol"></i> ลำดับถูก lock แล้ว — นำเสนอตามลำดับในหน้า <a href="present.html" style="color:var(--purple-text);font-weight:600">ประชุม</a>
+    </div>
+    <div id="queue-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html"><i class="fa-solid fa-table-columns"></i>Kanban</a>
+  <a href="propose.html" class="active"><i class="fa-solid fa-lightbulb"></i>เสนอ</a>
+  <a href="present.html"><i class="fa-solid fa-person-chalkboard"></i>ประชุม</a>
+  <a href="update.html"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",authDomain:"tmt-issue-tracker.firebaseapp.com",projectId:"tmt-issue-tracker",storageBucket:"tmt-issue-tracker.firebasestorage.app",messagingSenderId:"848414004186",appId:"1:848414004186:web:1ebf821c8a2dbe89e566e3"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+</script>
+<script>
+let masterLines=[], masterMachines=[];
+
+function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+function switchTab(t){
+  ['submit','pending','queue'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('view-'+x).style.display=x===t?'block':'none';
+  });
+  if(t==='pending') loadPending();
+  if(t==='queue')   loadQueue();
+}
+
+// ── master data ──
+async function loadMaster(){
+  try{
+    const ls=await db.collection('master_lines').get();
+    masterLines=ls.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    const sel=document.getElementById('p-line');
+    sel.innerHTML='<option value="">— เลือกไลน์ —</option>'+masterLines.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+    const ms=await db.collection('master_machines').get();
+    masterMachines=ms.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+  }catch(e){showToast('โหลด master data ไม่ได้');}
+}
+
+function onTypeChange(){
+  const t=document.getElementById('p-type').value;
+  document.getElementById('p-machine-field').style.display=t==='machine'?'flex':'none';
+}
+
+function onLineChange(){
+  const lid=document.getElementById('p-line').value;
+  const ms=masterMachines.filter(m=>m.lineId===lid);
+  const sel=document.getElementById('p-machine');
+  sel.innerHTML='<option value="">— เลือกเครื่องจักร —</option>'+ms.map(m=>`<option value="${m.id}" data-name="${m.name}">${m.name}</option>`).join('');
+}
+
+// ── submit ──
+async function submitProposal(){
+  const type=document.getElementById('p-type').value;
+  const reporter=document.getElementById('p-reporter').value.trim();
+  const lineId=document.getElementById('p-line').value;
+  const lineName=document.getElementById('p-line').selectedOptions[0]?.text||'';
+  const machSel=document.getElementById('p-machine');
+  const machineId=machSel.value;
+  const machineName=machSel.selectedOptions[0]?.dataset?.name||'';
+  const title=document.getElementById('p-title').value.trim();
+  const desc=document.getElementById('p-desc').value.trim();
+  const solution=document.getElementById('p-solution').value.trim();
+  const sev=document.getElementById('p-sev').value;
+
+  if(!type||!reporter||!lineId||!title||!desc){showToast('⚠️ กรอกข้อมูลที่จำเป็นให้ครบ');return;}
+  if(type==='machine'&&!machineId){showToast('⚠️ เลือกเครื่องจักรด้วย');return;}
+
+  try{
+    await db.collection('proposals').add({
+      type,reporter,lineId,lineName:lineName.replace(/^—\s*/,''),
+      machineId,machineName,title,description:desc,
+      proposedSolution:solution,severity:sev,
+      status:'pending',presentOrder:null,reviewers:[],
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ ส่งข้อเสนอแล้ว รอ Admin ดำเนินการ');
+    ['p-type','p-line','p-machine','p-sev'].forEach(id=>{document.getElementById(id).value='';});
+    ['p-reporter','p-title','p-desc','p-solution'].forEach(id=>{document.getElementById(id).value='';});
+    onTypeChange();
+    loadCounts();
+  }catch(e){showToast('❌ ส่งไม่สำเร็จ: '+e.message);}
+}
+
+// ── pending list ──
+async function loadPending(){
+  try{
+    const snap=await db.collection('proposals').where('status','==','pending').get();
+    const list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    document.getElementById('pending-list').innerHTML=list.length===0
+      ?'<div class="empty">ไม่มีข้อเสนอรอ pending</div>'
+      :list.map(p=>propCardHTML(p,'pending')).join('');
+  }catch(e){document.getElementById('pending-list').innerHTML='<div class="empty">โหลดไม่ได้</div>';}
+}
+
+// ── queue list ──
+async function loadQueue(){
+  try{
+    const snap=await db.collection('proposals').where('status','==','queued').get();
+    const list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.presentOrder||0)-(b.presentOrder||0));
+    document.getElementById('queue-list').innerHTML=list.length===0
+      ?'<div class="empty">ยังไม่มีข้อเสนอในคิว — Admin ต้อง lock ลำดับก่อน</div>'
+      :list.map(p=>propCardHTML(p,'queued')).join('');
+  }catch(e){document.getElementById('queue-list').innerHTML='<div class="empty">โหลดไม่ได้</div>';}
+}
+
+function propCardHTML(p,status){
+  const iconCls=p.type==='safety'?'pi-safety':'pi-machine';
+  const iconI=p.type==='safety'?'fa-triangle-exclamation':'fa-gear';
+  const sevMap={low:'🟢',medium:'🟡',high:'🔴'};
+  const date=p.createdAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short'})||'—';
+  const reviewerChips=(p.reviewers||[]).map(r=>{
+    const done=(p.comments||[]).some(c=>c.reviewer===r.machineName);
+    return`<span class="rchip ${done?'done':'wait'}"><i class="fa-solid ${done?'fa-check':'fa-clock'}"></i> ${r.machineName}</span>`;
+  }).join('');
+  return`<div class="prop-card ${status}">
+    <div class="prop-icon ${iconCls}"><i class="fa-solid ${iconI}"></i></div>
+    <div class="prop-body">
+      <div class="prop-title">${p.title||'—'}</div>
+      <div class="prop-meta">${p.lineName||'—'} · ${p.machineName||'—'} · ${p.reporter||'—'} · ${date} · ${sevMap[p.severity]||''}</div>
+      ${reviewerChips?`<div class="reviewer-chips">${reviewerChips}</div>`:''}
+    </div>
+    <div class="prop-right">
+      ${status==='queued'?`<div class="order-badge">${p.presentOrder||'?'}</div>`:''}
+      <span class="badge ${status==='queued'?'badge-inprogress':'badge-open'}">${status==='queued'?'คิว #'+p.presentOrder:'Pending'}</span>
+    </div>
+  </div>`;
+}
+
+async function loadCounts(){
+  try{
+    const [ps,qs]=await Promise.all([
+      db.collection('proposals').where('status','==','pending').get(),
+      db.collection('proposals').where('status','==','queued').get()
+    ]);
+    document.getElementById('cnt-pending').textContent=ps.size;
+    document.getElementById('cnt-queue').textContent=qs.size;
+  }catch(e){}
+}
+
+onTypeChange();
+loadMaster();
+loadCounts();
+</script>
+</body>
+</html>
