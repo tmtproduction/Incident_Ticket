@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT Issue Tracker — รายงานปัญหา</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo">TMT</div>
+    <span>Issue Tracker</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+    <a href="report.html" class="active"><i class="fa-solid fa-plus"></i> รายงานปัญหา</a>
+    <a href="update.html"><i class="fa-solid fa-pen-to-square"></i> อัพเดทสถานะ</a>
+    <a href="admin.html"><i class="fa-solid fa-sliders"></i> Admin</a>
+  </nav>
+</div>
+
+<div class="page" style="max-width:680px">
+  <div class="page-header">
+    <div>
+      <div class="page-title">รายงานปัญหาใหม่</div>
+      <div class="page-sub">กรอกรายละเอียดปัญหาที่พบ</div>
+    </div>
+    <a href="index.html" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> กลับ</a>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ข้อมูลพื้นฐาน</div>
+    <div class="form-grid">
+
+      <!-- ประเภทปัญหา -->
+      <div class="field">
+        <label>ประเภทปัญหา *</label>
+        <select id="issue-type" onchange="onTypeChange()">
+          <option value="">— เลือกประเภท —</option>
+          <option value="machine">🔧 เครื่องจักร (Machine)</option>
+          <option value="safety">⚠️ Safety / อุบัติเหตุ</option>
+        </select>
+      </div>
+
+      <!-- ผู้รายงาน -->
+      <div class="field">
+        <label>ชื่อผู้รายงาน *</label>
+        <input type="text" id="reporter" placeholder="ชื่อ-นามสกุล">
+      </div>
+
+      <!-- ไลน์/กลุ่มเครื่องจักร -->
+      <div class="field">
+        <label>ไลน์ / กลุ่มเครื่องจักร *</label>
+        <select id="line-select" onchange="onLineChange()">
+          <option value="">— กำลังโหลด... —</option>
+        </select>
+      </div>
+
+      <!-- เครื่องจักร (machine only) -->
+      <div class="field" id="machine-field">
+        <label>เครื่องจักร</label>
+        <select id="machine-select">
+          <option value="">— เลือกไลน์ก่อน —</option>
+        </select>
+      </div>
+
+      <!-- หัวข้อปัญหา -->
+      <div class="field full">
+        <label>หัวข้อปัญหา *</label>
+        <input type="text" id="title" placeholder="สรุปอาการที่พบสั้น ๆ เช่น Roller #3 มีเสียงผิดปกติ">
+      </div>
+
+      <!-- รายละเอียด -->
+      <div class="field full">
+        <label>รายละเอียดอาการที่พบ *</label>
+        <textarea id="description" placeholder="อธิบายอาการที่พบ สถานการณ์ขณะเกิดเหตุ และผลกระทบที่เกิดขึ้น"></textarea>
+      </div>
+
+      <!-- มาตรการเบื้องต้น -->
+      <div class="field full">
+        <label>มาตรการเบื้องต้นที่ดำเนินการแล้ว (ถ้ามี)</label>
+        <textarea id="initial-action" placeholder="เช่น หยุดเครื่อง, แจ้งหัวหน้างาน, ติดป้ายเตือน..."></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">มอบหมายงาน</div>
+    <div class="form-grid">
+
+      <!-- ผู้รับผิดชอบ -->
+      <div class="field">
+        <label>ผู้รับผิดชอบแก้ไข *</label>
+        <select id="assignee-select">
+          <option value="">— กำลังโหลด... —</option>
+        </select>
+      </div>
+
+      <!-- วันที่กำหนดเสร็จ -->
+      <div class="field">
+        <label>กำหนดเสร็จภายใน</label>
+        <input type="date" id="due-date">
+      </div>
+
+      <!-- ระดับความรุนแรง -->
+      <div class="field">
+        <label>ระดับความเร่งด่วน</label>
+        <select id="severity">
+          <option value="low">🟢 Low — ไม่กระทบการผลิต</option>
+          <option value="medium" selected>🟡 Medium — กระทบบางส่วน</option>
+          <option value="high">🔴 High — หยุดการผลิต / อันตราย</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="index.html" class="btn btn-ghost">ยกเลิก</a>
+    <button class="btn btn-primary" onclick="submitIssue()" id="submit-btn">
+      <i class="fa-solid fa-paper-plane"></i> บันทึกปัญหา
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+let masterLines = [];
+let masterPersons = [];
+
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+async function loadMaster() {
+  try {
+    // Load lines
+    const lSnap = await db.collection('master_lines').orderBy('order').get();
+    masterLines = lSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const lSel = document.getElementById('line-select');
+    lSel.innerHTML = '<option value="">— เลือกไลน์/กลุ่ม —</option>' +
+      masterLines.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+
+    // Load persons
+    const pSnap = await db.collection('master_persons').orderBy('name').get();
+    masterPersons = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const aSel = document.getElementById('assignee-select');
+    aSel.innerHTML = '<option value="">— เลือกผู้รับผิดชอบ —</option>' +
+      masterPersons.map(p => `<option value="${p.name}">${p.name} (${p.role || ''})</option>`).join('');
+  } catch(e) {
+    console.error(e);
+    showToast('⚠️ โหลด Master Data ไม่ได้ — ตรวจสอบ Firebase Config');
+  }
+}
+
+async function onLineChange() {
+  const lineId = document.getElementById('line-select').value;
+  const mSel = document.getElementById('machine-select');
+  mSel.innerHTML = '<option value="">— กำลังโหลด... —</option>';
+  if (!lineId) { mSel.innerHTML = '<option value="">— เลือกไลน์ก่อน —</option>'; return; }
+  try {
+    const snap = await db.collection('master_machines')
+      .where('lineId', '==', lineId).orderBy('name').get();
+    const machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    mSel.innerHTML = '<option value="">— เลือกเครื่องจักร —</option>' +
+      machines.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+  } catch(e) {
+    mSel.innerHTML = '<option value="">— โหลดไม่ได้ —</option>';
+  }
+}
+
+function onTypeChange() {
+  const t = document.getElementById('issue-type').value;
+  document.getElementById('machine-field').style.display = t === 'machine' ? 'flex' : 'none';
+}
+
+async function submitIssue() {
+  const type      = document.getElementById('issue-type').value;
+  const reporter  = document.getElementById('reporter').value.trim();
+  const lineId    = document.getElementById('line-select').value;
+  const lineName  = document.getElementById('line-select').selectedOptions[0]?.text || '';
+  const machine   = document.getElementById('machine-select').value;
+  const title     = document.getElementById('title').value.trim();
+  const desc      = document.getElementById('description').value.trim();
+  const initAct   = document.getElementById('initial-action').value.trim();
+  const assignee  = document.getElementById('assignee-select').value;
+  const dueDate   = document.getElementById('due-date').value;
+  const severity  = document.getElementById('severity').value;
+
+  if (!type || !reporter || !lineId || !title || !desc || !assignee) {
+    showToast('⚠️ กรุณากรอกข้อมูลที่จำเป็นให้ครบ'); return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังบันทึก...';
+
+  try {
+    const docRef = await db.collection('issues').add({
+      issueType:     type,
+      reporter,
+      lineId,
+      lineName:      lineName.replace(/^—\s*/, ''),
+      machineName:   machine,
+      title,
+      description:   desc,
+      initialAction: initAct,
+      assignee,
+      dueDate:       dueDate || null,
+      severity,
+      status:        'open',
+      createdAt:     firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt:     firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // บันทึก log แรก
+    await db.collection('updates').add({
+      issueId:   docRef.id,
+      status:    'open',
+      note:      `เปิด issue โดย ${reporter}${initAct ? '\nมาตรการเบื้องต้น: ' + initAct : ''}`,
+      updatedBy: reporter,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast('✅ บันทึกปัญหาเรียบร้อยแล้ว');
+    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ บันทึกไม่สำเร็จ: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> บันทึกปัญหา';
+  }
+}
+
+// Set default due date = 7 days from now
+const def = new Date(); def.setDate(def.getDate() + 7);
+document.getElementById('due-date').value = def.toISOString().split('T')[0];
+
+onTypeChange();
+loadMaster();
+</script>
+</body>
+</html>

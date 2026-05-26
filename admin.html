@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT Issue Tracker — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.admin-tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--gray-border); padding-bottom:0; }
+.admin-tab { padding:8px 18px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text-sub); border-bottom:2px solid transparent; margin-bottom:-1px; }
+.admin-tab.active { color:var(--purple); border-bottom-color:var(--purple); }
+.admin-panel { display:none; }
+.admin-panel.active { display:block; }
+.add-row { display:flex; gap:8px; margin-bottom:16px; }
+.add-row input, .add-row select { flex:1; border:1px solid var(--gray-border); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:inherit; }
+.tag { display:inline-flex; align-items:center; gap:6px; background:var(--purple-light); color:var(--purple-text); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:500; margin:4px; }
+.tag-del { cursor:pointer; opacity:0.5; } .tag-del:hover { opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo">TMT</div>
+    <span>Issue Tracker</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+    <a href="report.html"><i class="fa-solid fa-plus"></i> รายงานปัญหา</a>
+    <a href="update.html"><i class="fa-solid fa-pen-to-square"></i> อัพเดทสถานะ</a>
+    <a href="admin.html" class="active"><i class="fa-solid fa-sliders"></i> Admin</a>
+  </nav>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Admin — Master Data</div>
+      <div class="page-sub">จัดการไลน์เครื่องจักร, เครื่องจักร และรายชื่อผู้รับผิดชอบ</div>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <div class="admin-tab active" onclick="switchTab('lines')">🏭 ไลน์เครื่องจักร</div>
+    <div class="admin-tab" onclick="switchTab('machines')">🔧 เครื่องจักร</div>
+    <div class="admin-tab" onclick="switchTab('persons')">👤 รายชื่อบุคลากร</div>
+  </div>
+
+  <!-- TAB: Lines -->
+  <div class="admin-panel active" id="panel-lines">
+    <div class="card">
+      <div class="card-title">เพิ่มไลน์ / กลุ่มเครื่องจักร</div>
+      <div class="add-row">
+        <input type="text" id="new-line-name" placeholder="ชื่อไลน์ เช่น ไลน์ท่อ, ไลน์ C-Section...">
+        <button class="btn btn-primary" onclick="addLine()"><i class="fa-solid fa-plus"></i> เพิ่ม</button>
+      </div>
+      <div id="lines-list"><div class="loading">กำลังโหลด...</div></div>
+    </div>
+  </div>
+
+  <!-- TAB: Machines -->
+  <div class="admin-panel" id="panel-machines">
+    <div class="card">
+      <div class="card-title">เพิ่มเครื่องจักร</div>
+      <div class="add-row">
+        <select id="machine-line-select">
+          <option value="">— เลือกไลน์ —</option>
+        </select>
+        <input type="text" id="new-machine-name" placeholder="ชื่อเครื่องจักร เช่น Roller #3, Drive Motor A...">
+        <button class="btn btn-primary" onclick="addMachine()"><i class="fa-solid fa-plus"></i> เพิ่ม</button>
+      </div>
+      <div id="machines-list"><div class="loading">กำลังโหลด...</div></div>
+    </div>
+  </div>
+
+  <!-- TAB: Persons -->
+  <div class="admin-panel" id="panel-persons">
+    <div class="card">
+      <div class="card-title">เพิ่มบุคลากร</div>
+      <div class="add-row">
+        <input type="text" id="new-person-name" placeholder="ชื่อ-นามสกุล">
+        <select id="new-person-role">
+          <option value="ช่างซ่อมบำรุง">ช่างซ่อมบำรุง</option>
+          <option value="วิศวกร">วิศวกร</option>
+          <option value="หัวหน้างาน">หัวหน้างาน</option>
+          <option value="พนักงานหน้างาน">พนักงานหน้างาน</option>
+        </select>
+        <button class="btn btn-primary" onclick="addPerson()"><i class="fa-solid fa-plus"></i> เพิ่ม</button>
+      </div>
+      <div id="persons-list"><div class="loading">กำลังโหลด...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+let masterLines = [];
+
+function showToast(msg,dur=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function switchTab(name){
+  document.querySelectorAll('.admin-tab').forEach((el,i)=>{
+    const tabs=['lines','machines','persons'];
+    el.classList.toggle('active', tabs[i]===name);
+  });
+  document.querySelectorAll('.admin-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ============ LINES ============
+async function loadLines(){
+  try {
+    const snap = await db.collection('master_lines').orderBy('order').get();
+    masterLines = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderLines();
+    populateLineSel();
+  } catch(e){ document.getElementById('lines-list').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>'; }
+}
+
+function renderLines(){
+  if(masterLines.length===0){document.getElementById('lines-list').innerHTML='<div class="empty">ยังไม่มีไลน์</div>';return;}
+  document.getElementById('lines-list').innerHTML=`
+    <table class="data-table">
+      <thead><tr><th>ชื่อไลน์</th><th>ลำดับ</th><th></th></tr></thead>
+      <tbody>${masterLines.map(l=>`
+        <tr>
+          <td><strong>${l.name}</strong></td>
+          <td>${l.order}</td>
+          <td style="text-align:right"><button class="btn btn-danger btn-sm" onclick="deleteLine('${l.id}')"><i class="fa-solid fa-trash"></i> ลบ</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function populateLineSel(){
+  const sel=document.getElementById('machine-line-select');
+  sel.innerHTML='<option value="">— เลือกไลน์ —</option>'+
+    masterLines.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+}
+
+async function addLine(){
+  const name=document.getElementById('new-line-name').value.trim();
+  if(!name){showToast('กรอกชื่อไลน์ด้วย');return;}
+  try{
+    await db.collection('master_lines').add({name,order:masterLines.length+1});
+    document.getElementById('new-line-name').value='';
+    showToast('✅ เพิ่มไลน์แล้ว');
+    loadLines();
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function deleteLine(id){
+  if(!confirm('ยืนยันลบไลน์นี้?'))return;
+  try{await db.collection('master_lines').doc(id).delete();showToast('ลบแล้ว');loadLines();}
+  catch(e){showToast('❌ '+e.message);}
+}
+
+// ============ MACHINES ============
+async function loadMachines(){
+  try{
+    const snap=await db.collection('master_machines').orderBy('name').get();
+    const machines=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(machines.length===0){document.getElementById('machines-list').innerHTML='<div class="empty">ยังไม่มีเครื่องจักร</div>';return;}
+    const grouped={};
+    machines.forEach(m=>{
+      const lineName=masterLines.find(l=>l.id===m.lineId)?.name||m.lineId||'ไม่ระบุ';
+      if(!grouped[lineName])grouped[lineName]=[];
+      grouped[lineName].push(m);
+    });
+    document.getElementById('machines-list').innerHTML=Object.entries(grouped).map(([ln,ms])=>`
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">${ln}</div>
+        <table class="data-table">
+          <thead><tr><th>ชื่อเครื่องจักร</th><th></th></tr></thead>
+          <tbody>${ms.map(m=>`
+            <tr>
+              <td>${m.name}</td>
+              <td style="text-align:right"><button class="btn btn-danger btn-sm" onclick="deleteMachine('${m.id}')"><i class="fa-solid fa-trash"></i> ลบ</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`).join('');
+  }catch(e){document.getElementById('machines-list').innerHTML='<div class="empty">โหลดไม่ได้</div>';}
+}
+
+async function addMachine(){
+  const lineId=document.getElementById('machine-line-select').value;
+  const name=document.getElementById('new-machine-name').value.trim();
+  if(!lineId||!name){showToast('เลือกไลน์และกรอกชื่อเครื่องจักรด้วย');return;}
+  try{
+    await db.collection('master_machines').add({lineId,name});
+    document.getElementById('new-machine-name').value='';
+    showToast('✅ เพิ่มเครื่องจักรแล้ว');
+    loadMachines();
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function deleteMachine(id){
+  if(!confirm('ยืนยันลบเครื่องจักรนี้?'))return;
+  try{await db.collection('master_machines').doc(id).delete();showToast('ลบแล้ว');loadMachines();}
+  catch(e){showToast('❌ '+e.message);}
+}
+
+// ============ PERSONS ============
+async function loadPersons(){
+  try{
+    const snap=await db.collection('master_persons').orderBy('name').get();
+    const persons=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(persons.length===0){document.getElementById('persons-list').innerHTML='<div class="empty">ยังไม่มีบุคลากร</div>';return;}
+    document.getElementById('persons-list').innerHTML=`
+      <table class="data-table">
+        <thead><tr><th>ชื่อ</th><th>บทบาท</th><th></th></tr></thead>
+        <tbody>${persons.map(p=>`
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td><span class="badge badge-machine">${p.role||'—'}</span></td>
+            <td style="text-align:right"><button class="btn btn-danger btn-sm" onclick="deletePerson('${p.id}')"><i class="fa-solid fa-trash"></i> ลบ</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }catch(e){document.getElementById('persons-list').innerHTML='<div class="empty">โหลดไม่ได้</div>';}
+}
+
+async function addPerson(){
+  const name=document.getElementById('new-person-name').value.trim();
+  const role=document.getElementById('new-person-role').value;
+  if(!name){showToast('กรอกชื่อด้วย');return;}
+  try{
+    await db.collection('master_persons').add({name,role});
+    document.getElementById('new-person-name').value='';
+    showToast('✅ เพิ่มบุคลากรแล้ว');
+    loadPersons();
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function deletePerson(id){
+  if(!confirm('ยืนยันลบบุคลากรนี้?'))return;
+  try{await db.collection('master_persons').doc(id).delete();showToast('ลบแล้ว');loadPersons();}
+  catch(e){showToast('❌ '+e.message);}
+}
+
+// Load all on start
+loadLines().then(()=>loadMachines());
+loadPersons();
+</script>
+</body>
+</html>
