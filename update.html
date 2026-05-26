@@ -3,23 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TMT Issue Tracker — อัพเดทสถานะ</title>
+<title>TMT — อัพเดทสถานะ</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-.issue-detail-card {
-  background: #fff; border: 1px solid var(--gray-border);
-  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px;
-}
-.issue-detail-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
-.detail-body h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-.detail-body p  { font-size: 12px; color: var(--text-sub); }
-.detail-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 12px; }
-.detail-item label { font-size: 10px; text-transform: uppercase; letter-spacing:0.05em; color: var(--text-hint); display:block; margin-bottom: 2px; }
-.detail-item span  { font-size: 13px; font-weight: 500; }
-.search-area { display:flex; gap:8px; margin-bottom:20px; }
-.search-area input { flex:1; border:1px solid var(--gray-border); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px; font-family:inherit; }
+/* ── Mobile bottom nav ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
+.bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
+.bottom-nav a.active{color:var(--purple)}
+.bottom-nav a i{font-size:20px}
+@media(max-width:600px){.bottom-nav{display:flex}.topbar-nav{display:none}.page{padding-bottom:80px}}
+
+/* ── Issue list cards (pick mode) ── */
+.pick-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pick-title{font-size:15px;font-weight:600}
+.pick-count{font-size:12px;color:var(--text-sub)}
+.pick-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.pf-btn{padding:4px 12px;border-radius:20px;font-size:12px;border:1px solid var(--gray-border);background:#fff;cursor:pointer;color:var(--text-sub)}
+.pf-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.pick-search{display:flex;gap:8px;margin-bottom:14px}
+.pick-search input{flex:1;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:9px 12px;font-size:14px;font-family:inherit}
+.pick-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;transition:box-shadow .15s,border-color .15s}
+.pick-card:hover,.pick-card:active{box-shadow:0 2px 8px rgba(0,0,0,.1);border-color:#bbb}
+.pick-card.open{border-left:3px solid var(--coral)}
+.pick-card.inprogress{border-left:3px solid #EF9F27}
+.pick-body{flex:1;min-width:0}
+.pick-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.pick-meta{font-size:11px;color:var(--text-hint)}
+.pick-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+
+/* ── Detail / update area ── */
+.det-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.det-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.det-body h2{font-size:15px;font-weight:600;margin-bottom:3px;line-height:1.3}
+.det-body p{font-size:12px;color:var(--text-sub)}
+.det-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--gray-bg);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-sub)}
+.det-desc{font-size:13px;color:var(--text-sub);border-top:1px solid var(--gray-border);padding-top:10px;margin-top:10px;line-height:1.6}
+.back-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-sub);cursor:pointer;background:none;border:none;padding:0}
+.back-btn:hover{color:var(--text)}
+
+/* ── sev colors ── */
+.sev-high{color:var(--coral);font-weight:500}
+.sev-medium{color:var(--amber);font-weight:500}
+.sev-low{color:var(--green);font-weight:500}
+
+/* ── Update form ── */
+.status-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.status-pill{flex:1;min-width:100px;padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--gray-border);text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;background:#fff;color:var(--text-sub)}
+.status-pill.sel-open{border-color:var(--coral);background:#fff8f6;color:var(--coral)}
+.status-pill.sel-inprogress{border-color:#EF9F27;background:#fffbf0;color:#854F0B}
+.status-pill.sel-closed{border-color:var(--green);background:#f4fbed;color:var(--green)}
+.big-btn{width:100%;padding:14px;font-size:15px;border-radius:var(--radius-sm);border:none;background:var(--purple);color:#fff;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.big-btn:active{opacity:.85}
+.big-btn:disabled{opacity:.5}
+
+/* ── Timeline ── */
+.tl-wrap{margin-top:4px}
 </style>
 </head>
 <body>
@@ -37,91 +79,114 @@
   </nav>
 </div>
 
-<div class="page" style="max-width:720px">
-  <div class="page-header">
-    <div>
-      <div class="page-title">อัพเดทสถานะ</div>
-      <div class="page-sub">ค้นหา issue ที่รับผิดชอบแล้วอัพเดทความคืบหน้า</div>
+<div class="page" style="max-width:680px">
+
+  <!-- ══ SECTION A: เลือก issue ══ -->
+  <div id="sec-pick">
+    <div class="page-header" style="margin-bottom:14px">
+      <div>
+        <div class="page-title">เลือก issue ที่จะอัพเดท</div>
+        <div class="page-sub">แสดงเฉพาะ issue ที่ยังเปิดอยู่</div>
+      </div>
     </div>
-    <a href="index.html" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> กลับ</a>
+
+    <!-- filter pills -->
+    <div class="pick-filter">
+      <button class="pf-btn active" data-f="all">ทั้งหมด</button>
+      <button class="pf-btn" data-f="open">🔴 Open</button>
+      <button class="pf-btn" data-f="inprogress">🟡 In Progress</button>
+      <button class="pf-btn" data-f="machine"><i class="fa-solid fa-gear"></i> เครื่องจักร</button>
+      <button class="pf-btn" data-f="safety"><i class="fa-solid fa-triangle-exclamation"></i> Safety</button>
+    </div>
+
+    <!-- live search -->
+    <div class="pick-search">
+      <input type="text" id="live-search" placeholder="🔍  ค้นหาชื่อปัญหา หรือผู้รับผิดชอบ..." oninput="renderPick()">
+    </div>
+
+    <div class="pick-header">
+      <span class="pick-title">รายการปัญหา</span>
+      <span class="pick-count" id="pick-count">กำลังโหลด...</span>
+    </div>
+    <div id="pick-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
   </div>
 
-  <!-- ค้นหา issue -->
-  <div id="search-section">
-    <div class="search-area">
-      <input type="text" id="search-id" placeholder="พิมพ์ชื่อปัญหา, ชื่อผู้รับผิดชอบ หรือ Issue ID...">
-      <button class="btn btn-primary" onclick="searchIssue()"><i class="fa-solid fa-magnifying-glass"></i> ค้นหา</button>
-    </div>
-    <div id="search-results"></div>
-  </div>
+  <!-- ══ SECTION B: อัพเดท ══ -->
+  <div id="sec-update" style="display:none">
 
-  <!-- แสดง issue ที่เลือก -->
-  <div id="issue-section" style="display:none">
-    <div class="issue-detail-card">
-      <div class="issue-detail-header">
+    <div class="back-row">
+      <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> กลับรายการ</button>
+    </div>
+
+    <!-- detail card -->
+    <div class="det-card" id="det-card">
+      <div class="det-top">
         <div class="issue-icon" id="det-icon"></div>
-        <div class="detail-body">
+        <div class="det-body" style="flex:1;min-width:0">
           <h2 id="det-title">—</h2>
           <p id="det-meta">—</p>
         </div>
-        <span class="badge" id="det-badge" style="margin-left:auto;flex-shrink:0"></span>
+        <span class="badge" id="det-badge"></span>
       </div>
-      <div style="font-size:13px;color:var(--text-sub);border-top:1px solid var(--gray-border);padding-top:10px" id="det-desc"></div>
-      <div class="detail-grid">
-        <div class="detail-item"><label>ผู้รับผิดชอบ</label><span id="det-assignee">—</span></div>
-        <div class="detail-item"><label>กำหนดเสร็จ</label><span id="det-due">—</span></div>
-        <div class="detail-item"><label>ระดับความเร่งด่วน</label><span id="det-sev">—</span></div>
-      </div>
-      <div style="margin-top:12px;text-align:right">
-        <button class="btn btn-ghost btn-sm" onclick="clearIssue()">
-          <i class="fa-solid fa-xmark"></i> เลือก issue อื่น
-        </button>
-      </div>
+      <div class="det-chips" id="det-chips"></div>
+      <div class="det-desc" id="det-desc"></div>
     </div>
 
-    <!-- Update form -->
+    <!-- update form -->
     <div class="card">
-      <div class="card-title">บันทึกความคืบหน้า</div>
-      <div class="form-grid">
-        <div class="field">
-          <label>สถานะใหม่ *</label>
-          <select id="new-status">
-            <option value="open">🔴 Open — ยังไม่เริ่ม</option>
-            <option value="inprogress" selected>🟡 In Progress — กำลังแก้ไข</option>
-            <option value="closed">🟢 Closed — แก้ไขเสร็จแล้ว</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>อัพเดทโดย *</label>
-          <input type="text" id="updated-by" placeholder="ชื่อช่างหรือผู้อัพเดท">
-        </div>
-        <div class="field full">
-          <label>รายละเอียดความคืบหน้า *</label>
-          <textarea id="update-note" placeholder="บอกว่าทำอะไรไปแล้วบ้าง เจอปัญหาอะไร หรือผลหลังแก้ไข..."></textarea>
-        </div>
-        <div class="field full" id="root-cause-field" style="display:none">
-          <label>Root Cause (กรณีปิด issue)</label>
-          <textarea id="root-cause" placeholder="สาเหตุที่แท้จริงของปัญหา..."></textarea>
-        </div>
-        <div class="field full" id="corrective-field" style="display:none">
-          <label>Corrective Action ที่ทำ (กรณีปิด issue)</label>
-          <textarea id="corrective-action" placeholder="วิธีแก้ไขที่ดำเนินการไปแล้ว..."></textarea>
+      <div class="card-title" style="margin-bottom:10px">บันทึกความคืบหน้า</div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>เปลี่ยนสถานะเป็น</label>
+        <div class="status-pills">
+          <div class="status-pill" data-s="open" onclick="selectStatus('open')">🔴 Open<br><span style="font-weight:400;font-size:11px">ยังไม่เริ่ม</span></div>
+          <div class="status-pill" data-s="inprogress" onclick="selectStatus('inprogress')">🟡 In Progress<br><span style="font-weight:400;font-size:11px">กำลังแก้ไข</span></div>
+          <div class="status-pill" data-s="closed" onclick="selectStatus('closed')">🟢 Closed<br><span style="font-weight:400;font-size:11px">เสร็จแล้ว</span></div>
         </div>
       </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="submitUpdate()" id="update-btn">
-          <i class="fa-solid fa-floppy-disk"></i> บันทึกการอัพเดท
-        </button>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>ชื่อผู้อัพเดท *</label>
+        <input type="text" id="updated-by" placeholder="ชื่อ-นามสกุล" style="font-size:15px;padding:10px 12px">
       </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>รายละเอียดความคืบหน้า *</label>
+        <textarea id="update-note" placeholder="ทำอะไรไปแล้วบ้าง เจอปัญหาอะไร หรือผลหลังแก้ไข..." style="min-height:90px;font-size:14px;padding:10px 12px"></textarea>
+      </div>
+
+      <div id="close-fields" style="display:none">
+        <div class="field" style="margin-bottom:12px">
+          <label>Root Cause — สาเหตุที่แท้จริง</label>
+          <textarea id="root-cause" placeholder="ระบุสาเหตุของปัญหา..." style="font-size:14px;padding:10px 12px"></textarea>
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Corrective Action — วิธีแก้ไขที่ทำไปแล้ว</label>
+          <textarea id="corrective-action" placeholder="ระบุขั้นตอนแก้ไข..." style="font-size:14px;padding:10px 12px"></textarea>
+        </div>
+      </div>
+
+      <button class="big-btn" id="update-btn" onclick="submitUpdate()">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึกการอัพเดท
+      </button>
     </div>
 
-    <!-- Timeline -->
+    <!-- timeline -->
     <div class="card">
       <div class="card-title">ประวัติการอัพเดท</div>
-      <div class="timeline" id="timeline"><div class="loading">กำลังโหลด...</div></div>
+      <div class="timeline tl-wrap" id="timeline"><div class="loading">กำลังโหลด...</div></div>
     </div>
+
   </div>
 </div>
+
+<!-- Bottom nav mobile -->
+<nav class="bottom-nav">
+  <a href="index.html"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+  <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
+  <a href="update.html" class="active"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
+  <a href="admin.html"><i class="fa-solid fa-sliders"></i>Admin</a>
+</nav>
 
 <div class="toast" id="toast"></div>
 
@@ -140,164 +205,167 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const db = firebase.firestore();
 </script>
 <script>
+let allOpen = [];
+let currentFilter = 'all';
 let currentIssueId = null;
+let selectedStatus = '';
 
-function showToast(msg, dur=3000) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
+function showToast(msg,dur=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
 }
 
-// ถ้ามี ?id= ใน URL ให้โหลด issue นั้นเลย
-const urlParams = new URLSearchParams(window.location.search);
-const preloadId = urlParams.get('id');
-if (preloadId) { loadIssue(preloadId); }
+// filter pill clicks
+document.querySelectorAll('.pf-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.pf-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    currentFilter = b.dataset.f;
+    renderPick();
+  });
+});
 
-async function searchIssue() {
-  const q = document.getElementById('search-id').value.trim().toLowerCase();
-  if (!q) { showToast('กรุณากรอกข้อความค้นหา'); return; }
-  document.getElementById('search-results').innerHTML = '<div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ค้นหา...</div>';
-  try {
-    const snap = await db.collection('issues').limit(200).get();
-    const all = snap.docs.map(d => ({id:d.id,...d.data()}));
-    const matched = all.filter(i =>
-      i.status !== 'closed' &&
-      ((i.title||'').toLowerCase().includes(q) ||
-      (i.assignee||'').toLowerCase().includes(q) ||
-      i.id.toLowerCase().includes(q))
-    ).sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    if (matched.length === 0) {
-      document.getElementById('search-results').innerHTML = '<div class="empty">ไม่พบ issue ที่ตรงกัน</div>'; return;
-    }
-    document.getElementById('search-results').innerHTML = matched.map(i => `
-      <div class="issue-card ${i.status}" onclick="loadIssue('${i.id}')" style="margin-bottom:8px;cursor:pointer">
-        <div class="issue-icon ${i.issueType==='safety'?'icon-safety':'icon-machine'}">
-          <i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>
-        </div>
-        <div class="issue-body">
-          <div class="issue-title">${i.title}</div>
-          <div class="issue-meta">${i.lineName||'—'} · ${i.machineName||'—'} · ${i.assignee||'—'}</div>
-        </div>
-        <span class="badge badge-${i.status}">${{open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status}</span>
-      </div>`).join('');
-  } catch(e) {
-    document.getElementById('search-results').innerHTML = '<div class="empty">โหลดไม่ได้: ' + e.message + '</div>';
+async function loadOpenIssues(){
+  try{
+    const snap = await db.collection('issues').get();
+    allOpen = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(i=>i.status!=='closed')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderPick();
+  }catch(e){
+    document.getElementById('pick-list').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>';
   }
 }
 
-async function loadIssue(id) {
-  currentIssueId = id;
-  document.getElementById('search-section').style.display = 'none';
-  document.getElementById('issue-section').style.display  = 'block';
-  try {
-    const doc = await db.collection('issues').doc(id).get();
-    if (!doc.exists) { showToast('ไม่พบ issue นี้'); return; }
-    const i = { id: doc.id, ...doc.data() };
-    const sevMap = { low:'🟢 Low', medium:'🟡 Medium', high:'🔴 High' };
-    document.getElementById('det-title').textContent = i.title || '—';
-    document.getElementById('det-meta').textContent  = `${i.lineName||'—'} · ${i.machineName||'—'} · #${id.slice(-6).toUpperCase()}`;
-    document.getElementById('det-desc').textContent  = i.description || '';
-    document.getElementById('det-assignee').textContent = i.assignee || '—';
-    document.getElementById('det-due').textContent   = i.dueDate ? new Date(i.dueDate).toLocaleDateString('th-TH') : '—';
-    document.getElementById('det-sev').textContent   = sevMap[i.severity] || '—';
-    const icon = document.getElementById('det-icon');
-    icon.className = `issue-icon ${i.issueType==='safety'?'icon-safety':'icon-machine'}`;
-    icon.innerHTML = `<i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>`;
-    const badge = document.getElementById('det-badge');
-    const statusLabel = {open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status;
-    badge.className = `badge badge-${i.status}`;
-    badge.textContent = statusLabel;
-    document.getElementById('new-status').value = i.status;
-    onStatusChange();
+function renderPick(){
+  const q = document.getElementById('live-search').value.trim().toLowerCase();
+  let list = allOpen;
+  if(currentFilter==='open')      list=list.filter(i=>i.status==='open');
+  else if(currentFilter==='inprogress') list=list.filter(i=>i.status==='inprogress');
+  else if(currentFilter==='machine')    list=list.filter(i=>i.issueType==='machine');
+  else if(currentFilter==='safety')     list=list.filter(i=>i.issueType==='safety');
+  if(q) list=list.filter(i=>(i.title||'').toLowerCase().includes(q)||(i.assignee||'').toLowerCase().includes(q));
+
+  document.getElementById('pick-count').textContent = list.length+' รายการ';
+  if(list.length===0){
+    document.getElementById('pick-list').innerHTML='<div class="empty">ไม่พบ issue</div>';return;
+  }
+  const sevIcon={high:'🔴',medium:'🟡',low:'🟢'};
+  document.getElementById('pick-list').innerHTML=list.map(i=>`
+    <div class="pick-card ${i.status}" onclick="loadIssue('${i.id}')">
+      <div class="issue-icon ${i.issueType==='safety'?'icon-safety':'icon-machine'}" style="flex-shrink:0">
+        <i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>
+      </div>
+      <div class="pick-body">
+        <div class="pick-name">${i.title||'(ไม่มีชื่อ)'}</div>
+        <div class="pick-meta">${i.lineName||'—'} · ${i.machineName||'—'} · ${i.assignee||'—'}</div>
+      </div>
+      <div class="pick-right">
+        <span class="badge badge-${i.status}">${{open:'Open',inprogress:'In Progress'}[i.status]||i.status}</span>
+        <span style="font-size:11px">${sevIcon[i.severity]||''}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function loadIssue(id){
+  currentIssueId=id;
+  document.getElementById('sec-pick').style.display='none';
+  document.getElementById('sec-update').style.display='block';
+  window.scrollTo(0,0);
+  try{
+    const doc=await db.collection('issues').doc(id).get();
+    if(!doc.exists){showToast('ไม่พบ issue');return;}
+    const i={id:doc.id,...doc.data()};
+    const sevMap={low:'🟢 Low',medium:'🟡 Medium',high:'🔴 High'};
+    document.getElementById('det-title').textContent=i.title||'—';
+    document.getElementById('det-meta').textContent=`${i.lineName||'—'} · ${i.machineName||'—'}`;
+    document.getElementById('det-desc').textContent=i.description||'';
+    const icon=document.getElementById('det-icon');
+    icon.className=`issue-icon ${i.issueType==='safety'?'icon-safety':'icon-machine'}`;
+    icon.innerHTML=`<i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>`;
+    const badge=document.getElementById('det-badge');
+    badge.className=`badge badge-${i.status}`;
+    badge.textContent={open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status;
+    document.getElementById('det-chips').innerHTML=`
+      <span class="chip"><i class="fa-solid fa-user"></i> ${i.assignee||'—'}</span>
+      ${i.dueDate?`<span class="chip"><i class="fa-solid fa-calendar"></i> ${new Date(i.dueDate).toLocaleDateString('th-TH')}</span>`:''}
+      <span class="chip">${sevMap[i.severity]||'—'}</span>`;
+    selectStatus(i.status);
     loadTimeline(id);
-  } catch(e) { showToast('โหลดไม่ได้: ' + e.message); }
+  }catch(e){showToast('โหลดไม่ได้: '+e.message);}
 }
 
-function onStatusChange() {
-  const s = document.getElementById('new-status').value;
-  const show = s === 'closed';
-  document.getElementById('root-cause-field').style.display   = show ? 'flex' : 'none';
-  document.getElementById('corrective-field').style.display   = show ? 'flex' : 'none';
+function selectStatus(s){
+  selectedStatus=s;
+  document.querySelectorAll('.status-pill').forEach(p=>{
+    p.className='status-pill'+(p.dataset.s===s?' sel-'+s:'');
+  });
+  document.getElementById('close-fields').style.display=s==='closed'?'block':'none';
 }
-document.getElementById('new-status').addEventListener('change', onStatusChange);
 
-async function loadTimeline(id) {
-  const tl = document.getElementById('timeline');
-  try {
-    const snap = await db.collection('updates')
-      .where('issueId','==',id).get();
-    if (snap.empty) { tl.innerHTML = '<div class="empty">ยังไม่มีการอัพเดท</div>'; return; }
-    const sorted = snap.docs.map(d=>d.data()).sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
-    const dotIcon = { open:'fa-circle-exclamation', inprogress:'fa-arrow-right', closed:'fa-check' };
-    tl.innerHTML = sorted.map(u => {
-      const date = u.updatedAt?.toDate?.()?.toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) || '—';
-      return `
-        <div class="tl-item">
-          <div class="tl-dot ${u.status}"><i class="fa-solid ${dotIcon[u.status]||'fa-circle'}"></i></div>
-          <div class="tl-body">
-            <div class="tl-action">${{open:'เปิด issue',inprogress:'อัพเดทความคืบหน้า',closed:'ปิด issue'}[u.status]||u.status}</div>
-            <div class="tl-detail">${u.note || '—'}</div>
-            ${u.rootCause ? `<div class="tl-detail" style="margin-top:4px"><strong>Root Cause:</strong> ${u.rootCause}</div>` : ''}
-            ${u.correctiveAction ? `<div class="tl-detail"><strong>Corrective Action:</strong> ${u.correctiveAction}</div>` : ''}
-            <div class="tl-time">${date} — โดย ${u.updatedBy||'—'}</div>
-          </div>
-        </div>`;
+async function loadTimeline(id){
+  const tl=document.getElementById('timeline');
+  try{
+    const snap=await db.collection('updates').where('issueId','==',id).get();
+    if(snap.empty){tl.innerHTML='<div class="empty">ยังไม่มีการอัพเดท</div>';return;}
+    const sorted=snap.docs.map(d=>d.data()).sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+    const icon={open:'fa-circle-exclamation',inprogress:'fa-arrow-right',closed:'fa-check'};
+    tl.innerHTML=sorted.map(u=>{
+      const date=u.updatedAt?.toDate?.()?.toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'})||'—';
+      return`<div class="tl-item">
+        <div class="tl-dot ${u.status}"><i class="fa-solid ${icon[u.status]||'fa-circle'}"></i></div>
+        <div class="tl-body">
+          <div class="tl-action">${{open:'เปิด issue',inprogress:'อัพเดทความคืบหน้า',closed:'ปิด issue'}[u.status]||u.status}</div>
+          <div class="tl-detail">${u.note||'—'}</div>
+          ${u.rootCause?`<div class="tl-detail" style="margin-top:3px"><strong>Root Cause:</strong> ${u.rootCause}</div>`:''}
+          ${u.correctiveAction?`<div class="tl-detail"><strong>Corrective:</strong> ${u.correctiveAction}</div>`:''}
+          <div class="tl-time">${date} — ${u.updatedBy||'—'}</div>
+        </div>
+      </div>`;
     }).join('');
-  } catch(e) { tl.innerHTML = '<div class="empty">โหลด timeline ไม่ได้</div>'; }
+  }catch(e){tl.innerHTML='<div class="empty">โหลด timeline ไม่ได้</div>';}
 }
 
-async function submitUpdate() {
-  if (!currentIssueId) return;
-  const newStatus  = document.getElementById('new-status').value;
-  const updatedBy  = document.getElementById('updated-by').value.trim();
-  const note       = document.getElementById('update-note').value.trim();
-  const rootCause  = document.getElementById('root-cause').value.trim();
-  const corrective = document.getElementById('corrective-action').value.trim();
-
-  if (!updatedBy || !note) { showToast('⚠️ กรอกชื่อผู้อัพเดทและรายละเอียดด้วย'); return; }
-
-  const btn = document.getElementById('update-btn');
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังบันทึก...';
-
-  try {
-    const updateData = {
-      issueId:   currentIssueId,
-      status:    newStatus,
-      note,
-      updatedBy,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    if (rootCause)  updateData.rootCause  = rootCause;
-    if (corrective) updateData.correctiveAction = corrective;
-
-    await db.collection('updates').add(updateData);
+async function submitUpdate(){
+  if(!currentIssueId||!selectedStatus)return;
+  const updatedBy=document.getElementById('updated-by').value.trim();
+  const note=document.getElementById('update-note').value.trim();
+  const rootCause=document.getElementById('root-cause').value.trim();
+  const corrective=document.getElementById('corrective-action').value.trim();
+  if(!updatedBy||!note){showToast('⚠️ กรอกชื่อผู้อัพเดทและรายละเอียดด้วย');return;}
+  const btn=document.getElementById('update-btn');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังบันทึก...';
+  try{
+    const data={issueId:currentIssueId,status:selectedStatus,note,updatedBy,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(rootCause) data.rootCause=rootCause;
+    if(corrective) data.correctiveAction=corrective;
+    await db.collection('updates').add(data);
     await db.collection('issues').doc(currentIssueId).update({
-      status:    newStatus,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      ...(newStatus === 'closed' ? { closedAt: firebase.firestore.FieldValue.serverTimestamp() } : {})
+      status:selectedStatus,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      ...(selectedStatus==='closed'?{closedAt:firebase.firestore.FieldValue.serverTimestamp()}:{})
     });
-
-    showToast('✅ อัพเดทเรียบร้อยแล้ว');
-    document.getElementById('update-note').value = '';
-    document.getElementById('root-cause').value = '';
-    document.getElementById('corrective-action').value = '';
+    showToast('✅ บันทึกเรียบร้อยแล้ว');
+    document.getElementById('update-note').value='';
+    document.getElementById('root-cause').value='';
+    document.getElementById('corrective-action').value='';
     loadIssue(currentIssueId);
-  } catch(e) {
-    showToast('❌ บันทึกไม่สำเร็จ: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกการอัพเดท';
-  }
+    loadOpenIssues();
+  }catch(e){showToast('❌ บันทึกไม่สำเร็จ: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกการอัพเดท';}
 }
 
-function clearIssue() {
-  currentIssueId = null;
-  document.getElementById('issue-section').style.display  = 'none';
-  document.getElementById('search-section').style.display = 'block';
-  document.getElementById('search-results').innerHTML = '';
-  document.getElementById('search-id').value = '';
+function goBack(){
+  currentIssueId=null;
+  document.getElementById('sec-update').style.display='none';
+  document.getElementById('sec-pick').style.display='block';
   history.replaceState(null,'',window.location.pathname);
+  window.scrollTo(0,0);
 }
+
+// preload from URL ?id=
+const urlId=new URLSearchParams(window.location.search).get('id');
+loadOpenIssues().then(()=>{ if(urlId) loadIssue(urlId); });
 </script>
 </body>
 </html>
