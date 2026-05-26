@@ -131,8 +131,8 @@ function switchTab(name){
 // ============ LINES ============
 async function loadLines(){
   try {
-    const snap = await db.collection('master_lines').orderBy('order').get();
-    masterLines = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const snap = await db.collection('master_lines').get();
+    masterLines = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
     renderLines();
     populateLineSel();
   } catch(e){ document.getElementById('lines-list').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>'; }
@@ -179,8 +179,8 @@ async function deleteLine(id){
 // ============ MACHINES ============
 async function loadMachines(){
   try{
-    const snap=await db.collection('master_machines').orderBy('name').get();
-    const machines=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const snap=await db.collection('master_machines').get();
+    const machines=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
     if(machines.length===0){document.getElementById('machines-list').innerHTML='<div class="empty">ยังไม่มีเครื่องจักร</div>';return;}
     const grouped={};
     machines.forEach(m=>{
@@ -225,8 +225,8 @@ async function deleteMachine(id){
 // ============ PERSONS ============
 async function loadPersons(){
   try{
-    const snap=await db.collection('master_persons').orderBy('name').get();
-    const persons=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const snap=await db.collection('master_persons').get();
+    const persons=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
     if(persons.length===0){document.getElementById('persons-list').innerHTML='<div class="empty">ยังไม่มีบุคลากร</div>';return;}
     document.getElementById('persons-list').innerHTML=`
       <table class="data-table">
