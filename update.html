@@ -72,9 +72,10 @@
     <span>Issue Tracker</span>
   </div>
   <nav class="topbar-nav">
-    <a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+    <a href="index.html"><i class="fa-solid fa-table-columns"></i> Kanban</a>
     <a href="report.html"><i class="fa-solid fa-plus"></i> รายงานปัญหา</a>
     <a href="update.html" class="active"><i class="fa-solid fa-pen-to-square"></i> อัพเดทสถานะ</a>
+    <a href="tasks.html"><i class="fa-solid fa-list-check"></i> Tasks</a>
     <a href="admin.html"><i class="fa-solid fa-sliders"></i> Admin</a>
   </nav>
 </div>
@@ -114,8 +115,9 @@
   <!-- ══ SECTION B: อัพเดท ══ -->
   <div id="sec-update" style="display:none">
 
-    <div class="back-row">
+    <div class="back-row" style="justify-content:space-between">
       <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> กลับรายการ</button>
+      <a id="tasks-link" href="tasks.html" class="btn btn-ghost btn-sm" style="color:var(--purple);font-size:12px"><i class="fa-solid fa-list-check"></i> Tasks</a>
     </div>
 
     <!-- detail card -->
@@ -185,7 +187,7 @@
   <a href="index.html"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
   <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
   <a href="update.html" class="active"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
-  <a href="admin.html"><i class="fa-solid fa-sliders"></i>Admin</a>
+  <a href="tasks.html"><i class="fa-solid fa-list-check"></i>Tasks</a>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -293,6 +295,7 @@ async function loadIssue(id){
       <span class="chip">${sevMap[i.severity]||'—'}</span>`;
     selectStatus(i.status);
     loadTimeline(id);
+    document.getElementById('tasks-link').href = 'tasks.html?id='+id;
   }catch(e){showToast('โหลดไม่ได้: '+e.message);}
 }
 
