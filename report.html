@@ -157,15 +157,15 @@ function showToast(msg, dur=3000) {
 async function loadMaster() {
   try {
     // Load lines
-    const lSnap = await db.collection('master_lines').orderBy('order').get();
-    masterLines = lSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const lSnap = await db.collection('master_lines').get(); // sorted client-side
+    masterLines = lSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.order||0)-(b.order||0));
     const lSel = document.getElementById('line-select');
     lSel.innerHTML = '<option value="">— เลือกไลน์/กลุ่ม —</option>' +
       masterLines.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
 
     // Load persons
-    const pSnap = await db.collection('master_persons').orderBy('name').get();
-    masterPersons = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const pSnap = await db.collection('master_persons').get();
+    masterPersons = pSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
     const aSel = document.getElementById('assignee-select');
     aSel.innerHTML = '<option value="">— เลือกผู้รับผิดชอบ —</option>' +
       masterPersons.map(p => `<option value="${p.name}">${p.name} (${p.role || ''})</option>`).join('');
@@ -182,8 +182,9 @@ async function onLineChange() {
   if (!lineId) { mSel.innerHTML = '<option value="">— เลือกไลน์ก่อน —</option>'; return; }
   try {
     const snap = await db.collection('master_machines')
-      .where('lineId', '==', lineId).orderBy('name').get();
-    const machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      .where('lineId', '==', lineId).get();
+    const machines = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (a.name||'').localeCompare(b.name||'', 'th'));
     mSel.innerHTML = '<option value="">— เลือกเครื่องจักร —</option>' +
       machines.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
   } catch(e) {
