@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT — Tasks</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
+.bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
+.bottom-nav a.active{color:var(--purple)}
+.bottom-nav a i{font-size:20px}
+@media(max-width:600px){.bottom-nav{display:flex}.topbar-nav{display:none}.page{padding-bottom:80px}}
+
+/* tabs */
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--gray-border);margin-bottom:18px}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-sub);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+/* issue header ref */
+.issue-ref{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:11px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.issue-ref.open{border-left:3px solid var(--coral)}
+.issue-ref.inprogress{border-left:3px solid #EF9F27}
+.issue-ref.closed{border-left:3px solid var(--green)}
+.issue-ref-body{flex:1;min-width:0}
+.issue-ref-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.issue-ref-meta{font-size:11px;color:var(--text-hint);margin-top:2px}
+
+/* progress */
+.prog-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px}
+.prog-pct{font-weight:600;color:var(--purple)}
+.prog-track{background:var(--gray-bg);border-radius:4px;height:10px;overflow:hidden}
+.prog-fill{height:10px;border-radius:4px;background:var(--purple);transition:width .5s}
+
+/* task section */
+.task-sec-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sub);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.task-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.task-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:flex-start;gap:10px;transition:box-shadow .15s}
+.task-card:hover{box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.task-card.done-card{opacity:.55}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--gray-border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .2s}
+.chk.checked{background:var(--green);border-color:var(--green);color:#fff}
+.chk:hover:not(.checked){border-color:var(--purple);background:var(--purple-light)}
+.task-body{flex:1;min-width:0}
+.task-name{font-size:13px;font-weight:500;margin-bottom:5px;line-height:1.4}
+.done-card .task-name{text-decoration:line-through;color:var(--text-hint)}
+.task-chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:10px;background:var(--gray-bg);color:var(--text-sub)}
+.chip-who{background:var(--purple-light);color:var(--purple-text)}
+.chip-due{background:var(--amber-light);color:var(--amber-text)}
+.chip-overdue{background:var(--coral-light);color:var(--coral-text)}
+.chip-done{background:var(--green-light);color:var(--green-text)}
+.task-del{margin-left:auto;background:none;border:none;color:var(--text-hint);cursor:pointer;padding:2px 4px;font-size:12px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.task-card:hover .task-del{opacity:1}
+
+/* add task form */
+.add-form{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.add-form-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.add-grid .full{grid-column:1/-1}
+@media(max-width:480px){.add-grid{grid-template-columns:1fr}.add-grid .full{grid-column:1}}
+.add-actions{display:flex;justify-content:flex-end;margin-top:12px}
+
+/* my tasks view */
+.my-issue-group{margin-bottom:20px}
+.my-issue-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--gray-border)}
+.my-issue-name{font-size:13px;font-weight:600}
+.my-issue-meta{font-size:11px;color:var(--text-hint)}
+
+/* empty */
+.empty-tasks{text-align:center;padding:32px 0;color:var(--text-hint);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo">TMT</div>
+    <span>Issue Tracker</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="index.html"><i class="fa-solid fa-table-columns"></i> Kanban</a>
+    <a href="report.html"><i class="fa-solid fa-plus"></i> รายงานปัญหา</a>
+    <a href="update.html"><i class="fa-solid fa-pen-to-square"></i> อัพเดทสถานะ</a>
+    <a href="tasks.html" class="active"><i class="fa-solid fa-list-check"></i> Tasks</a>
+    <a href="admin.html"><i class="fa-solid fa-sliders"></i> Admin</a>
+  </nav>
+</div>
+
+<div class="page" style="max-width:680px">
+
+  <div class="page-header" style="margin-bottom:14px">
+    <div>
+      <div class="page-title" id="page-title">Task Checklist</div>
+      <div class="page-sub" id="page-sub">กำลังโหลด...</div>
+    </div>
+    <a href="index.html" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> กลับ</a>
+  </div>
+
+  <!-- tabs -->
+  <div class="tab-row">
+    <div class="tab active" id="tab-issue" onclick="switchTab('issue')">
+      <i class="fa-solid fa-list-check"></i> งานของ Issue
+    </div>
+    <div class="tab" id="tab-mine" onclick="switchTab('mine')">
+      <i class="fa-solid fa-user"></i> งานของฉัน
+    </div>
+  </div>
+
+  <!-- ══ TAB: ISSUE TASKS ══ -->
+  <div id="view-issue">
+
+    <!-- issue ref -->
+    <div class="issue-ref" id="issue-ref-card" style="display:none">
+      <div class="issue-icon" id="issue-ref-icon"></div>
+      <div class="issue-ref-body">
+        <div class="issue-ref-title" id="issue-ref-title">—</div>
+        <div class="issue-ref-meta" id="issue-ref-meta">—</div>
+      </div>
+      <span class="badge" id="issue-ref-badge"></span>
+    </div>
+
+    <!-- no issue selected -->
+    <div id="no-issue-msg">
+      <div style="background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:20px;margin-bottom:14px">
+        <div class="field">
+          <label>เลือก Issue ที่ต้องการจัดการ Tasks</label>
+          <select id="issue-picker" onchange="onIssuePick()">
+            <option value="">— กำลังโหลด... —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- progress -->
+    <div class="prog-card" id="prog-card" style="display:none">
+      <div class="prog-row">
+        <span style="color:var(--text-sub);font-size:12px">ความคืบหน้า</span>
+        <span class="prog-pct" id="prog-label">0 / 0 tasks</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- pending tasks -->
+    <div id="pending-section" style="display:none">
+      <div class="task-sec-label"><i class="fa-solid fa-circle-half-stroke"></i> รอดำเนินการ (<span id="pending-count">0</span>)</div>
+      <div class="task-list" id="pending-list"></div>
+    </div>
+
+    <!-- done tasks -->
+    <div id="done-section" style="display:none">
+      <div class="task-sec-label" style="color:var(--green-text)"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> เสร็จแล้ว (<span id="done-count">0</span>)</div>
+      <div class="task-list" id="done-list"></div>
+    </div>
+
+    <!-- add task form -->
+    <div class="add-form" id="add-form" style="display:none">
+      <div class="add-form-title"><i class="fa-solid fa-plus" style="color:var(--purple)"></i> เพิ่ม Task ใหม่</div>
+      <div class="add-grid">
+        <div class="field full">
+          <label>รายละเอียดงาน *</label>
+          <input type="text" id="new-task-name" placeholder="เช่น สั่งซื้อ Inverter สำรอง, ทดสอบเดินเครื่อง 4 ชม." style="font-size:14px">
+        </div>
+        <div class="field">
+          <label>มอบหมายให้</label>
+          <select id="new-task-assignee">
+            <option value="">— เลือกผู้รับผิดชอบ —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>กำหนดเสร็จ</label>
+          <input type="date" id="new-task-due">
+        </div>
+      </div>
+      <div class="add-actions">
+        <button class="btn btn-primary" onclick="addTask()">
+          <i class="fa-solid fa-plus"></i> เพิ่ม Task
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: MY TASKS ══ -->
+  <div id="view-mine" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+      <div class="field" style="flex:1;margin:0">
+        <select id="mine-person" onchange="loadMyTasks()" style="font-size:14px;padding:9px 12px">
+          <option value="">— เลือกชื่อคุณ —</option>
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-sub);white-space:nowrap;cursor:pointer">
+        <input type="checkbox" id="mine-show-done" onchange="loadMyTasks()"> รวมที่เสร็จแล้ว
+      </label>
+    </div>
+    <div id="mine-list"><div class="empty-tasks">เลือกชื่อเพื่อดูงานของคุณ</div></div>
+  </div>
+
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html"><i class="fa-solid fa-table-columns"></i>Kanban</a>
+  <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
+  <a href="update.html"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
+  <a href="tasks.html" class="active"><i class="fa-solid fa-list-check"></i>Tasks</a>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",
+  authDomain: "tmt-issue-tracker.firebaseapp.com",
+  projectId: "tmt-issue-tracker",
+  storageBucket: "tmt-issue-tracker.firebasestorage.app",
+  messagingSenderId: "848414004186",
+  appId: "1:848414004186:web:1ebf821c8a2dbe89e566e3"
+};
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+const db = firebase.firestore();
+</script>
+<script>
+const today = new Date(); today.setHours(0,0,0,0);
+let currentIssueId = null;
+let currentIssueName = '';
+let allPersons = [];
+let allIssues = [];
+let currentTab = 'issue';
+
+function showToast(msg, dur=3000){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+function switchTab(tab){
+  currentTab = tab;
+  ['issue','mine'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('view-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  if(tab==='mine') loadMyTasks();
+}
+
+// ── init ──
+async function init(){
+  // load persons
+  try{
+    const snap = await db.collection('master_persons').get();
+    allPersons = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const assignSel = document.getElementById('new-task-assignee');
+    const mineSel   = document.getElementById('mine-person');
+    allPersons.forEach(p=>{
+      assignSel.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+      mineSel.innerHTML   += `<option value="${p.name}">${p.name}</option>`;
+    });
+  }catch(e){ console.warn('persons:', e); }
+
+  // load issues for picker
+  try{
+    const snap = await db.collection('issues').get();
+    allIssues = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(i=>i.status!=='closed')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const picker = document.getElementById('issue-picker');
+    picker.innerHTML = '<option value="">— เลือก issue —</option>' +
+      allIssues.map(i=>`<option value="${i.id}">[${({open:'Open',inprogress:'In Progress'}[i.status]||i.status)}] ${i.title||'(ไม่มีชื่อ)'}</option>`).join('');
+  }catch(e){ console.warn('issues:', e); }
+
+  // preload from ?id=
+  const urlId = new URLSearchParams(window.location.search).get('id');
+  if(urlId){
+    document.getElementById('issue-picker').value = urlId;
+    onIssuePick();
+  }
+}
+
+function onIssuePick(){
+  const id = document.getElementById('issue-picker').value;
+  if(!id){ currentIssueId=null; return; }
+  currentIssueId = id;
+  const issue = allIssues.find(i=>i.id===id);
+  if(issue) showIssueRef(issue);
+  document.getElementById('no-issue-msg').style.display = 'none';
+  document.getElementById('issue-ref-card').style.display = 'flex';
+  document.getElementById('prog-card').style.display = 'block';
+  document.getElementById('add-form').style.display = 'block';
+  loadTasks();
+}
+
+function showIssueRef(i){
+  const icon = document.getElementById('issue-ref-icon');
+  icon.className = `issue-icon ${i.issueType==='safety'?'icon-safety':'icon-machine'}`;
+  icon.innerHTML = `<i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>`;
+  document.getElementById('issue-ref-card').className = `issue-ref ${i.status}`;
+  document.getElementById('issue-ref-title').textContent = i.title||'—';
+  document.getElementById('issue-ref-meta').textContent = `${i.lineName||'—'} · ${i.assignee||'—'}`;
+  const badge = document.getElementById('issue-ref-badge');
+  badge.className = `badge badge-${i.status}`;
+  badge.textContent = {open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status;
+  currentIssueName = i.title||'';
+  document.getElementById('page-sub').textContent = i.title||'';
+}
+
+// ── load & render tasks ──
+async function loadTasks(){
+  if(!currentIssueId) return;
+  try{
+    const snap = await db.collection('tasks').where('issueId','==',currentIssueId).get();
+    const tasks = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+    renderTasks(tasks);
+  }catch(e){ showToast('โหลด tasks ไม่ได้: '+e.message); }
+}
+
+function renderTasks(tasks){
+  const pending = tasks.filter(t=>!t.done);
+  const done    = tasks.filter(t=>t.done);
+  const total   = tasks.length;
+  const pct     = total ? Math.round(done.length/total*100) : 0;
+
+  document.getElementById('prog-label').textContent = `${done.length} / ${total} tasks (${pct}%)`;
+  document.getElementById('prog-fill').style.width  = pct+'%';
+
+  document.getElementById('pending-count').textContent = pending.length;
+  document.getElementById('done-count').textContent    = done.length;
+
+  document.getElementById('pending-section').style.display = 'block';
+  document.getElementById('done-section').style.display    = done.length ? 'block' : 'none';
+
+  document.getElementById('pending-list').innerHTML = pending.length
+    ? pending.map(t=>taskCardHTML(t)).join('')
+    : '<div class="empty-tasks" style="padding:16px 0">ไม่มีงานค้างอยู่ 🎉</div>';
+
+  document.getElementById('done-list').innerHTML = done.map(t=>taskCardHTML(t)).join('');
+}
+
+function taskCardHTML(t){
+  const overdue = t.dueDate && !t.done && new Date(t.dueDate) < today;
+  const doneDate = t.doneAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short'})||'';
+  return `
+  <div class="task-card ${t.done?'done-card':''}" id="tc-${t.id}">
+    <div class="chk ${t.done?'checked':''}" onclick="toggleTask('${t.id}',${t.done})" title="${t.done?'ยกเลิก':'mark เสร็จ'}">
+      ${t.done?'<i class="fa-solid fa-check" style="font-size:11px"></i>':''}
+    </div>
+    <div class="task-body">
+      <div class="task-name">${t.name||'—'}</div>
+      <div class="task-chips">
+        ${t.assignee?`<span class="chip chip-who"><i class="fa-solid fa-user" style="font-size:9px"></i> ${t.assignee}</span>`:''}
+        ${t.done && doneDate?`<span class="chip chip-done"><i class="fa-solid fa-check" style="font-size:9px"></i> เสร็จ ${doneDate}</span>`:''}
+        ${overdue?`<span class="chip chip-overdue"><i class="fa-solid fa-clock" style="font-size:9px"></i> เลย due ${new Date(t.dueDate).toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</span>`:''}
+        ${t.dueDate && !t.done && !overdue?`<span class="chip chip-due"><i class="fa-solid fa-calendar" style="font-size:9px"></i> ครบ ${new Date(t.dueDate).toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</span>`:''}
+      </div>
+    </div>
+    <button class="task-del" onclick="deleteTask('${t.id}')" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+  </div>`;
+}
+
+async function toggleTask(taskId, wasDone){
+  try{
+    await db.collection('tasks').doc(taskId).update({
+      done: !wasDone,
+      doneAt: !wasDone ? firebase.firestore.FieldValue.serverTimestamp() : null
+    });
+    loadTasks();
+  }catch(e){ showToast('อัพเดทไม่ได้: '+e.message); }
+}
+
+async function deleteTask(taskId){
+  if(!confirm('ลบ task นี้?')) return;
+  try{
+    await db.collection('tasks').doc(taskId).delete();
+    showToast('ลบแล้ว'); loadTasks();
+  }catch(e){ showToast('ลบไม่ได้: '+e.message); }
+}
+
+async function addTask(){
+  const name     = document.getElementById('new-task-name').value.trim();
+  const assignee = document.getElementById('new-task-assignee').value;
+  const dueDate  = document.getElementById('new-task-due').value;
+  if(!name){ showToast('⚠️ กรอกรายละเอียดงานด้วย'); return; }
+  if(!currentIssueId){ showToast('⚠️ เลือก issue ก่อน'); return; }
+  try{
+    await db.collection('tasks').add({
+      issueId:    currentIssueId,
+      issueName:  currentIssueName,
+      name, assignee, dueDate: dueDate||null,
+      done:       false, doneAt: null,
+      createdAt:  firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('new-task-name').value = '';
+    showToast('✅ เพิ่ม task แล้ว');
+    loadTasks();
+  }catch(e){ showToast('เพิ่มไม่ได้: '+e.message); }
+}
+
+// ── My Tasks tab ──
+async function loadMyTasks(){
+  const person   = document.getElementById('mine-person').value;
+  const showDone = document.getElementById('mine-show-done').checked;
+  if(!person){ document.getElementById('mine-list').innerHTML='<div class="empty-tasks">เลือกชื่อเพื่อดูงานของคุณ</div>'; return; }
+
+  document.getElementById('mine-list').innerHTML='<div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+  try{
+    const snap = await db.collection('tasks').where('assignee','==',person).get();
+    let tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!showDone) tasks = tasks.filter(t=>!t.done);
+    tasks.sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      const da = a.dueDate ? new Date(a.dueDate) : new Date('9999');
+      const db2= b.dueDate ? new Date(b.dueDate) : new Date('9999');
+      return da - db2;
+    });
+
+    if(tasks.length===0){
+      document.getElementById('mine-list').innerHTML=`<div class="empty-tasks">ไม่มีงาน${showDone?'':' (ที่ยังค้างอยู่)'}ของ ${person}</div>`;
+      return;
+    }
+
+    // group by issue
+    const grouped = {};
+    tasks.forEach(t=>{
+      const key = t.issueId||'other';
+      if(!grouped[key]) grouped[key]={ name: t.issueName||'(ไม่ระบุ issue)', tasks:[] };
+      grouped[key].tasks.push(t);
+    });
+
+    document.getElementById('mine-list').innerHTML = Object.entries(grouped).map(([issueId, g])=>`
+      <div class="my-issue-group">
+        <div class="my-issue-head">
+          <a href="tasks.html?id=${issueId}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:6px;flex:1">
+            <i class="fa-solid fa-link" style="font-size:11px;color:var(--text-hint)"></i>
+            <span class="my-issue-name">${g.name}</span>
+          </a>
+          <span class="my-issue-meta">${g.tasks.length} tasks</span>
+        </div>
+        ${g.tasks.map(t=>taskCardHTML(t)).join('')}
+      </div>`).join('');
+  }catch(e){
+    document.getElementById('mine-list').innerHTML='<div class="empty-tasks">โหลดไม่ได้: '+e.message+'</div>';
+  }
+}
+
+// ── enter key on add task ──
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('new-task-name').addEventListener('keydown', e=>{
+    if(e.key==='Enter') addTask();
+  });
+});
+
+init();
+</script>
+</body>
+</html>
