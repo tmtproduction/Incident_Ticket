@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TMT — Issue Tracker</title>
+<title>TMT — Kanban</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="shared.css">
@@ -12,10 +12,9 @@
 .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
 .bottom-nav a.active{color:var(--purple)}
 .bottom-nav a i{font-size:20px}
-@media(max-width:600px){
-  .bottom-nav{display:flex}.topbar-nav{display:none}
-  .page{padding-bottom:80px}.topbar .btn{display:none}
-  .metrics{grid-template-columns:repeat(2,1fr)}
+@media(max-width:640px){
+  .bottom-nav{display:flex}.topbar-nav{display:none}.page{padding-bottom:80px}
+  .topbar .btn{display:none}.metrics{grid-template-columns:repeat(2,1fr)}
   .kb-board{grid-template-columns:1fr}
 }
 
@@ -27,60 +26,78 @@
 .metric-sub{font-size:11px;color:var(--text-hint);margin-top:4px}
 
 /* kanban */
-.kb-section-title{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 .kb-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
 .kb-col{background:var(--gray-bg);border:1px solid var(--gray-border);border-radius:var(--radius);padding:10px;min-height:120px}
 .kb-col-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--gray-border);margin-bottom:10px}
-.kb-col-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;color:var(--text)}
+.kb-col-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
 .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.dot-open{background:var(--coral)}
-.dot-prog{background:#EF9F27}
-.dot-done{background:var(--green)}
+.dot-open{background:var(--coral)}.dot-prog{background:#EF9F27}.dot-done{background:var(--green)}
 .kb-cnt{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
 .cnt-open{background:var(--coral-light);color:var(--coral-text)}
 .cnt-prog{background:var(--amber-light);color:var(--amber-text)}
 .cnt-done{background:var(--green-light);color:var(--green-text)}
 
-/* kanban cards */
-.kb-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow .15s;text-decoration:none;display:block;color:inherit}
-.kb-card:last-of-type{margin-bottom:0}
+/* assignee group */
+.assignee-group{margin-bottom:10px}
+.assignee-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hint);margin-bottom:5px;padding:0 2px;display:flex;align-items:center;gap:5px}
+.avatar-sm{width:18px;height:18px;border-radius:50%;background:var(--purple-light);color:var(--purple);font-size:8px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* kanban card */
+.kb-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:box-shadow .15s,border-color .15s;display:block}
+.kb-card:last-child{margin-bottom:0}
 .kb-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.09);border-color:#bbb}
-.kb-card.closed{opacity:.65}
-.kb-card-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:5px}
-.kb-icon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.kb-card.closed{opacity:.6}
+.kb-card-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:4px}
+.kb-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
 .ki-machine{background:var(--purple-light);color:var(--purple)}
 .ki-safety{background:var(--coral-light);color:var(--coral-text)}
-.kb-title{font-size:12px;font-weight:500;line-height:1.4;flex:1;color:var(--text)}
-.kb-meta{font-size:10px;color:var(--text-hint);margin-bottom:7px;padding-left:31px}
-.kb-foot{display:flex;align-items:center;justify-content:space-between;padding-left:31px}
-.kb-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;background:var(--purple-light);color:var(--purple);flex-shrink:0}
-.kb-who{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-sub)}
+.kb-title{font-size:12px;font-weight:500;line-height:1.4;flex:1}
+.kb-meta{font-size:10px;color:var(--text-hint);margin-bottom:5px;padding-left:29px}
+.kb-foot{display:flex;align-items:center;justify-content:flex-end;gap:5px;padding-left:29px}
 .sev{width:7px;height:7px;border-radius:50%}
-.sev-high{background:var(--coral)}
-.sev-med{background:#EF9F27}
-.sev-low{background:var(--green)}
+.sev-high{background:var(--coral)}.sev-med{background:#EF9F27}.sev-low{background:var(--green)}
 .overdue-tag{font-size:9px;font-weight:600;background:var(--coral-light);color:var(--coral-text);padding:2px 6px;border-radius:4px}
 .closed-tag{font-size:9px;color:var(--text-hint)}
-
-/* add btn */
 .kb-add-btn{width:100%;padding:8px;border:1px dashed var(--gray-border);border-radius:var(--radius-sm);background:none;color:var(--text-hint);font-size:12px;cursor:pointer;margin-top:8px;text-align:center;font-family:inherit;transition:all .15s}
 .kb-add-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
-
-/* refresh */
-.dash-refresh{font-size:11px;color:var(--text-hint);display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-top:2px}
-.dash-refresh:hover{color:var(--text-sub)}
-
-/* empty col */
 .kb-empty{text-align:center;padding:20px 0;font-size:12px;color:var(--text-hint)}
+.dash-refresh{font-size:11px;color:var(--text-hint);display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-top:2px}
+
+/* ── Issue Detail Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.modal-box{background:#fff;border-radius:var(--radius);width:100%;max-width:680px;box-shadow:0 8px 32px rgba(0,0,0,.18);margin:auto}
+.modal-header{display:flex;align-items:flex-start;gap:10px;padding:14px 18px;border-bottom:1px solid var(--gray-border);position:sticky;top:0;background:#fff;z-index:1;border-radius:var(--radius) var(--radius) 0 0}
+.modal-header-body{flex:1;min-width:0}
+.modal-htitle{font-size:16px;font-weight:600;line-height:1.3;margin-bottom:4px}
+.modal-hmeta{font-size:11px;color:var(--text-hint)}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-sub);padding:4px 8px;border-radius:var(--radius-sm);flex-shrink:0}
+.modal-close:hover{background:var(--gray-bg)}
+.modal-body{padding:16px 18px}
+.modal-section{margin-bottom:16px}
+.modal-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sub);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:480px){.info-grid{grid-template-columns:repeat(2,1fr)}}
+.info-item label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-hint);display:block;margin-bottom:3px}
+.info-item span{font-size:13px;font-weight:500}
+.desc-box{background:var(--gray-bg);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text-sub);line-height:1.6}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--gray-border);display:flex;gap:8px;justify-content:flex-end;background:#fff;border-radius:0 0 var(--radius) var(--radius)}
+
+/* timeline in modal */
+.tl-item{display:flex;gap:10px;padding-bottom:14px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:12px;top:24px;bottom:0;width:1px;background:var(--gray-border)}
+.tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.tl-dot.open{background:var(--coral-light);color:var(--coral)}
+.tl-dot.inprogress{background:var(--amber-light);color:var(--amber)}
+.tl-dot.closed{background:var(--green-light);color:var(--green)}
+.tl-body{flex:1}
+.tl-action{font-size:13px;font-weight:500}
+.tl-detail{font-size:12px;color:var(--text-sub);margin-top:2px;line-height:1.5}
+.tl-time{font-size:10px;color:var(--text-hint);margin-top:3px}
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <div class="topbar-brand">
-    <div class="logo">TMT</div>
-    <span>Issue Tracker</span>
-  </div>
+  <div class="topbar-brand"><div class="logo">TMT</div><span>Issue Tracker</span></div>
   <nav class="topbar-nav">
     <a href="index.html" class="active"><i class="fa-solid fa-table-columns"></i> Kanban</a>
     <a href="propose.html"><i class="fa-solid fa-lightbulb"></i> เสนอปัญหา</a>
@@ -93,206 +110,279 @@
 </div>
 
 <div class="page">
-
-  <!-- header -->
   <div class="page-header" style="margin-bottom:16px">
     <div>
-      <div class="page-title">Overview</div>
-      <div class="dash-refresh" id="last-updated" onclick="loadAll()">
-        <i class="fa-solid fa-rotate-right"></i> กำลังโหลด...
-      </div>
+      <div class="page-title">Kanban Board</div>
+      <div class="dash-refresh" id="last-updated" onclick="loadAll()"><i class="fa-solid fa-rotate-right"></i> กำลังโหลด...</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <select id="filter-line" style="border:1px solid var(--gray-border);border-radius:6px;padding:6px 28px 6px 10px;font-size:13px;background:#fff;font-family:inherit;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6a65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center" onchange="renderKanban()">
-        <option value="all">ทุกไลน์</option>
-      </select>
-    </div>
+    <select id="filter-line" style="border:1px solid var(--gray-border);border-radius:6px;padding:6px 28px 6px 10px;font-size:13px;background:#fff;font-family:inherit;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6a65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center" onchange="renderKanban()">
+      <option value="all">ทุกไลน์</option>
+    </select>
   </div>
 
-  <!-- metric summary -->
   <div class="metrics">
-    <div class="metric">
-      <div class="metric-label"><i class="fa-solid fa-list-ul" style="color:var(--purple)"></i> ทั้งหมด</div>
-      <div class="metric-value v-all" id="m-total">—</div>
-      <div class="metric-sub">issues</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label"><i class="fa-solid fa-circle-exclamation" style="color:var(--coral)"></i> Open</div>
-      <div class="metric-value v-open" id="m-open">—</div>
-      <div class="metric-sub" id="m-overdue-sub">รอดำเนินการ</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label"><i class="fa-solid fa-arrow-right" style="color:var(--amber)"></i> In Progress</div>
-      <div class="metric-value v-prog" id="m-prog">—</div>
-      <div class="metric-sub">กำลังแก้ไข</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Closed</div>
-      <div class="metric-value v-done" id="m-done">—</div>
-      <div class="metric-sub">เสร็จแล้ว</div>
-    </div>
-  </div>
-
-  <!-- kanban board -->
-  <div class="kb-section-title">
-    <span><i class="fa-solid fa-table-columns" style="color:var(--purple);margin-right:6px"></i>Kanban Board</span>
-    <span id="kb-filter-label" style="font-size:12px;font-weight:400;color:var(--text-sub)"></span>
+    <div class="metric"><div class="metric-label"><i class="fa-solid fa-list-ul" style="color:var(--purple)"></i> ทั้งหมด</div><div class="metric-value v-all" id="m-total">—</div><div class="metric-sub">issues</div></div>
+    <div class="metric"><div class="metric-label"><i class="fa-solid fa-circle-exclamation" style="color:var(--coral)"></i> Open</div><div class="metric-value v-open" id="m-open">—</div><div class="metric-sub" id="m-overdue-sub">รอดำเนินการ</div></div>
+    <div class="metric"><div class="metric-label"><i class="fa-solid fa-arrow-right" style="color:var(--amber)"></i> In Progress</div><div class="metric-value v-prog" id="m-prog">—</div><div class="metric-sub">กำลังแก้ไข</div></div>
+    <div class="metric"><div class="metric-label"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Closed</div><div class="metric-value v-done" id="m-done">—</div><div class="metric-sub">เสร็จแล้ว</div></div>
   </div>
 
   <div class="kb-board">
     <div class="kb-col">
-      <div class="kb-col-head">
-        <div class="kb-col-title"><div class="dot dot-open"></div> Open</div>
-        <span class="kb-cnt cnt-open" id="cnt-open">0</span>
-      </div>
+      <div class="kb-col-head"><div class="kb-col-title"><div class="dot dot-open"></div> Open</div><span class="kb-cnt cnt-open" id="cnt-open">0</span></div>
       <div id="col-open"><div class="kb-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>
       <button class="kb-add-btn" onclick="location.href='report.html'"><i class="fa-solid fa-plus"></i> รายงานปัญหา</button>
     </div>
-
     <div class="kb-col">
-      <div class="kb-col-head">
-        <div class="kb-col-title"><div class="dot dot-prog"></div> In Progress</div>
-        <span class="kb-cnt cnt-prog" id="cnt-prog">0</span>
-      </div>
+      <div class="kb-col-head"><div class="kb-col-title"><div class="dot dot-prog"></div> In Progress</div><span class="kb-cnt cnt-prog" id="cnt-prog">0</span></div>
       <div id="col-prog"><div class="kb-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>
     </div>
-
     <div class="kb-col">
-      <div class="kb-col-head">
-        <div class="kb-col-title"><div class="dot dot-done"></div> Closed</div>
-        <span class="kb-cnt cnt-done" id="cnt-done">0</span>
-      </div>
+      <div class="kb-col-head"><div class="kb-col-title"><div class="dot dot-done"></div> Closed</div><span class="kb-cnt cnt-done" id="cnt-done">0</span></div>
       <div id="col-done"><div class="kb-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>
     </div>
   </div>
+</div>
 
+<!-- ══ ISSUE DETAIL MODAL ══ -->
+<div class="modal-overlay" id="issue-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="kb-icon" id="m-icon" style="width:36px;height:36px;font-size:16px;flex-shrink:0;margin-top:2px"></div>
+      <div class="modal-header-body">
+        <div class="modal-htitle" id="m-title">—</div>
+        <div class="modal-hmeta" id="m-meta">—</div>
+      </div>
+      <span class="badge" id="m-badge"></span>
+      <button class="modal-close" onclick="document.getElementById('issue-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- info grid -->
+      <div class="info-grid" id="m-info"></div>
+
+      <!-- description -->
+      <div class="modal-section">
+        <div class="modal-section-title"><i class="fa-solid fa-file-lines"></i> รายละเอียด</div>
+        <div class="desc-box" id="m-desc"></div>
+      </div>
+
+      <!-- initial action -->
+      <div class="modal-section" id="m-init-wrap" style="display:none">
+        <div class="modal-section-title"><i class="fa-solid fa-shield"></i> มาตรการเบื้องต้น</div>
+        <div class="desc-box" id="m-init"></div>
+      </div>
+
+      <!-- timeline -->
+      <div class="modal-section">
+        <div class="modal-section-title"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการอัพเดท</div>
+        <div id="m-timeline"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a id="m-tasks-btn" href="#" class="btn btn-ghost btn-sm"><i class="fa-solid fa-list-check"></i> Tasks</a>
+      <a id="m-update-btn" href="#" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen-to-square"></i> อัพเดทสถานะ</a>
+    </div>
+  </div>
 </div>
 
 <nav class="bottom-nav">
   <a href="index.html" class="active"><i class="fa-solid fa-table-columns"></i>Kanban</a>
-  <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
+  <a href="propose.html"><i class="fa-solid fa-lightbulb"></i>เสนอ</a>
   <a href="update.html"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
   <a href="tasks.html"><i class="fa-solid fa-list-check"></i>Tasks</a>
 </nav>
-
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",
-  authDomain: "tmt-issue-tracker.firebaseapp.com",
-  projectId: "tmt-issue-tracker",
-  storageBucket: "tmt-issue-tracker.firebasestorage.app",
-  messagingSenderId: "848414004186",
-  appId: "1:848414004186:web:1ebf821c8a2dbe89e566e3"
-};
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-const db = firebase.firestore();
+const firebaseConfig={apiKey:"AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",authDomain:"tmt-issue-tracker.firebaseapp.com",projectId:"tmt-issue-tracker",storageBucket:"tmt-issue-tracker.firebasestorage.app",messagingSenderId:"848414004186",appId:"1:848414004186:web:1ebf821c8a2dbe89e566e3"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
 </script>
 <script>
-let allIssues = [];
-const today = new Date(); today.setHours(0,0,0,0);
+let allIssues=[];
+const today=new Date();today.setHours(0,0,0,0);
+function initials(n){return(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function isOverdue(i){return i.dueDate&&i.status!=='closed'&&new Date(i.dueDate)<today;}
 
-function initials(name){ return (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
-
-function isOverdue(issue){
-  if(!issue.dueDate || issue.status==='closed') return false;
-  return new Date(issue.dueDate) < today;
-}
-
+// ── Kanban card HTML ──
 function cardHTML(i){
-  const iconCls = i.issueType==='safety' ? 'ki-safety' : 'ki-machine';
-  const iconI   = i.issueType==='safety' ? 'fa-triangle-exclamation' : 'fa-gear';
-  const sev     = {high:'sev-high',medium:'sev-med',low:'sev-low'}[i.severity]||'sev-med';
-  const due     = isOverdue(i);
-  const closedDate = i.closedAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short'})||'';
-
-  return `<a class="kb-card ${i.status}" href="update.html?id=${i.id}">
+  const iconCls=i.issueType==='safety'?'ki-safety':'ki-machine';
+  const iconI=i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear';
+  const sev={high:'sev-high',medium:'sev-med',low:'sev-low'}[i.severity]||'sev-med';
+  const due=isOverdue(i);
+  const closedDate=i.closedAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short'})||'';
+  const dateStr=i.createdAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})||'';
+  return`<div class="kb-card ${i.status}" onclick="openIssueModal('${i.id}')">
     <div class="kb-card-top">
       <div class="kb-icon ${iconCls}"><i class="fa-solid ${iconI}"></i></div>
       <div class="kb-title">${i.title||'(ไม่มีชื่อ)'}</div>
     </div>
-    <div class="kb-meta">${i.lineName||'—'}${i.machineName?' · '+i.machineName:''}</div>
+    <div class="kb-meta">${i.lineName||'—'}${i.machineName?' · '+i.machineName:''} · ${dateStr}</div>
     <div class="kb-foot">
-      <div class="kb-who">
-        <div class="kb-avatar">${initials(i.assignee)}</div>
-        ${i.assignee||'—'}
-      </div>
       ${i.status==='closed'
-        ? `<span class="closed-tag">ปิด ${closedDate}</span>`
-        : due
-          ? `<span class="overdue-tag"><i class="fa-solid fa-clock"></i> เลย due</span>`
-          : `<div class="sev ${sev}" title="${i.severity||''}"></div>`
-      }
+        ?`<span class="closed-tag">ปิด ${closedDate}</span>`
+        :due
+          ?`<span class="overdue-tag"><i class="fa-solid fa-clock"></i> เลย due</span>`
+          :`<div class="sev ${sev}"></div>`}
     </div>
-  </a>`;
+  </div>`;
+}
+
+// ── Render column grouped by assignee ──
+function renderColGrouped(list, colId){
+  if(list.length===0){document.getElementById(colId).innerHTML='<div class="kb-empty">ไม่มี issue</div>';return;}
+  // group by assignee
+  const groups={};
+  list.forEach(i=>{
+    const key=i.assignee||'(ไม่ได้ assign)';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(i);
+  });
+  document.getElementById(colId).innerHTML=Object.entries(groups).map(([name,items])=>`
+    <div class="assignee-group">
+      <div class="assignee-label">
+        <div class="avatar-sm">${initials(name)}</div>
+        ${name} <span style="font-weight:400">(${items.length})</span>
+      </div>
+      ${items.map(cardHTML).join('')}
+    </div>`).join('');
 }
 
 function renderKanban(){
-  const lineFilter = document.getElementById('filter-line').value;
-  let issues = allIssues;
-  if(lineFilter !== 'all') issues = issues.filter(i => i.lineId === lineFilter);
+  const lf=document.getElementById('filter-line').value;
+  let issues=lf==='all'?allIssues:allIssues.filter(i=>i.lineId===lf);
 
-  const label = lineFilter==='all' ? '' : `— ${document.getElementById('filter-line').selectedOptions[0]?.text||''}`;
-  document.getElementById('kb-filter-label').textContent = label;
+  const open=issues.filter(i=>i.status==='open');
+  const prog=issues.filter(i=>i.status==='inprogress');
+  const closed=issues.filter(i=>i.status==='closed').slice(0,15);
 
-  const open   = issues.filter(i=>i.status==='open');
-  const prog   = issues.filter(i=>i.status==='inprogress');
-  const closed = issues.filter(i=>i.status==='closed').slice(0,10);
+  document.getElementById('cnt-open').textContent=open.length;
+  document.getElementById('cnt-prog').textContent=prog.length;
+  document.getElementById('cnt-done').textContent=closed.length;
 
-  document.getElementById('cnt-open').textContent = open.length;
-  document.getElementById('cnt-prog').textContent = prog.length;
-  document.getElementById('cnt-done').textContent = closed.length;
+  // open & inprogress: grouped by assignee
+  renderColGrouped(open,'col-open');
+  renderColGrouped(prog,'col-prog');
+  // closed: simple list (no grouping needed)
+  document.getElementById('col-done').innerHTML=closed.length
+    ?closed.map(cardHTML).join('')
+    :'<div class="kb-empty">ไม่มี issue</div>';
 
-  const render = (list, elId) => {
-    document.getElementById(elId).innerHTML = list.length
-      ? list.map(cardHTML).join('')
-      : '<div class="kb-empty">ไม่มี issue</div>';
-  };
-  render(open,   'col-open');
-  render(prog,   'col-prog');
-  render(closed, 'col-done');
-
-  const total = issues.length;
-  const overdueCount = open.filter(i=>isOverdue(i)).length;
-  document.getElementById('m-total').textContent = total;
-  document.getElementById('m-open').textContent  = open.length;
-  document.getElementById('m-prog').textContent  = prog.length;
-  document.getElementById('m-done').textContent  = closed.length;
-  document.getElementById('m-overdue-sub').textContent =
-    overdueCount > 0 ? `⚠️ เลย due ${overdueCount} รายการ` : 'รอดำเนินการ';
+  const overdueCount=open.filter(i=>isOverdue(i)).length;
+  document.getElementById('m-total').textContent=issues.length;
+  document.getElementById('m-open').textContent=open.length;
+  document.getElementById('m-prog').textContent=prog.length;
+  document.getElementById('m-done').textContent=closed.length;
+  document.getElementById('m-overdue-sub').textContent=overdueCount>0?`⚠️ เลย due ${overdueCount} รายการ`:'รอดำเนินการ';
 }
 
 async function populateLineFilter(){
   try{
-    const snap = await db.collection('master_lines').get();
-    const lines = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(a.order||0)-(b.order||0));
-    const sel = document.getElementById('filter-line');
-    lines.forEach(l=>{
-      const opt = document.createElement('option');
-      opt.value = l.id; opt.textContent = l.name;
-      sel.appendChild(opt);
-    });
-  }catch(e){ console.warn('line filter:', e); }
+    const snap=await db.collection('master_lines').get();
+    const lines=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    const sel=document.getElementById('filter-line');
+    lines.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;sel.appendChild(o);});
+  }catch(e){}
 }
 
 async function loadAll(){
   try{
-    const snap = await db.collection('issues').get();
-    allIssues = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const snap=await db.collection('issues').get();
+    allIssues=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderKanban();
-    document.getElementById('last-updated').innerHTML =
-      '<i class="fa-solid fa-rotate-right"></i> อัพเดท '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-updated').innerHTML='<i class="fa-solid fa-rotate-right"></i> อัพเดท '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
-    ['col-open','col-prog','col-done'].forEach(id=>{
-      document.getElementById(id).innerHTML='<div class="kb-empty">โหลดไม่ได้</div>';
-    });
+    ['col-open','col-prog','col-done'].forEach(id=>{document.getElementById(id).innerHTML='<div class="kb-empty">โหลดไม่ได้</div>';});
   }
 }
+
+// ── Issue Detail Modal ──
+async function openIssueModal(id){
+  const modal=document.getElementById('issue-modal');
+  modal.style.display='flex';
+  document.getElementById('m-timeline').innerHTML='<div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i></div>';
+
+  try{
+    const doc=await db.collection('issues').doc(id).get();
+    if(!doc.exists){return;}
+    const i={id:doc.id,...doc.data()};
+    const sevMap={low:'🟢 Low',medium:'🟡 Medium',high:'🔴 High'};
+    const statusLabel={open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status;
+    const dateStr=i.createdAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})||'—';
+    const dueStr=i.dueDate?new Date(i.dueDate).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'—';
+
+    // header
+    const icon=document.getElementById('m-icon');
+    icon.className=`kb-icon ${i.issueType==='safety'?'ki-safety':'ki-machine'}`;
+    icon.style.cssText='width:36px;height:36px;font-size:16px;flex-shrink:0;margin-top:2px';
+    icon.innerHTML=`<i class="fa-solid ${i.issueType==='safety'?'fa-triangle-exclamation':'fa-gear'}"></i>`;
+    document.getElementById('m-title').textContent=i.title||'—';
+    document.getElementById('m-meta').textContent=`${i.lineName||'—'} · ${i.machineName||'—'} · #${id.slice(-6).toUpperCase()} · ${dateStr}`;
+    const badge=document.getElementById('m-badge');
+    badge.className=`badge badge-${i.status}`;
+    badge.textContent=statusLabel;
+
+    // info grid
+    document.getElementById('m-info').innerHTML=`
+      <div class="info-item"><label>ผู้รับผิดชอบ</label><span>${i.assignee||'—'}</span></div>
+      <div class="info-item"><label>ประเภท</label><span>${i.issueType==='safety'?'⚠️ Safety':'🔧 เครื่องจักร'}</span></div>
+      <div class="info-item"><label>ความเร่งด่วน</label><span>${sevMap[i.severity]||'—'}</span></div>
+      <div class="info-item"><label>กำหนดเสร็จ</label><span>${dueStr}</span></div>
+      <div class="info-item"><label>ผู้รายงาน</label><span>${i.reporter||'—'}</span></div>
+      <div class="info-item"><label>สถานะ</label><span class="badge badge-${i.status}" style="font-size:11px">${statusLabel}</span></div>`;
+
+    // description
+    document.getElementById('m-desc').textContent=i.description||'—';
+
+    // initial action
+    if(i.initialAction){
+      document.getElementById('m-init-wrap').style.display='block';
+      document.getElementById('m-init').textContent=i.initialAction;
+    } else {
+      document.getElementById('m-init-wrap').style.display='none';
+    }
+
+    // footer buttons
+    document.getElementById('m-update-btn').href=`update.html?id=${id}`;
+    document.getElementById('m-tasks-btn').href=`tasks.html?id=${id}`;
+
+    // timeline
+    loadModalTimeline(id);
+  }catch(e){
+    document.getElementById('m-timeline').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>';
+  }
+}
+
+async function loadModalTimeline(id){
+  try{
+    const snap=await db.collection('updates').where('issueId','==',id).get();
+    if(snap.empty){document.getElementById('m-timeline').innerHTML='<div style="font-size:12px;color:var(--text-hint)">ยังไม่มีการอัพเดท</div>';return;}
+    const sorted=snap.docs.map(d=>d.data()).sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+    const icon={open:'fa-circle-exclamation',inprogress:'fa-arrow-right',closed:'fa-check'};
+    document.getElementById('m-timeline').innerHTML=sorted.map(u=>{
+      const date=u.updatedAt?.toDate?.()?.toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'})||'—';
+      return`<div class="tl-item">
+        <div class="tl-dot ${u.status}"><i class="fa-solid ${icon[u.status]||'fa-circle'}"></i></div>
+        <div class="tl-body">
+          <div class="tl-action">${{open:'เปิด issue',inprogress:'อัพเดทความคืบหน้า',closed:'ปิด issue'}[u.status]||u.status}</div>
+          <div class="tl-detail">${u.note||'—'}</div>
+          ${u.rootCause?`<div class="tl-detail"><strong>Root Cause:</strong> ${u.rootCause}</div>`:''}
+          <div class="tl-time">${date} — ${u.updatedBy||'—'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('m-timeline').innerHTML='<div class="empty">โหลด timeline ไม่ได้</div>';}
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('issue-modal'))
+    document.getElementById('issue-modal').style.display='none';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('issue-modal').style.display='none';});
 
 populateLineFilter();
 loadAll();
