@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TMT — Kanban</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="icons.css">
 <link rel="stylesheet" href="shared.css">
 <style>
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
@@ -76,6 +77,10 @@
 .assignee-count{font-size:10px;font-weight:500;padding:1px 6px;border-radius:8px;background:var(--gray-bg);color:var(--text-hint)}
 
 /* AI Summary */
+.api-key-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--amber-light);border-radius:var(--radius-sm);margin-bottom:12px;font-size:12px;color:var(--amber-text)}
+.api-key-form{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.api-key-input{flex:1;min-width:200px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit}
+.api-key-saved{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green-text);background:var(--green-light);padding:6px 12px;border-radius:var(--radius-sm);margin-bottom:12px}
 .ai-section{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:16px 18px;margin-bottom:20px}
 .ai-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
 .ai-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
@@ -158,13 +163,37 @@
   <div class="ai-header">
     <div>
       <div class="ai-title"><i class="fa-solid fa-robot" style="color:#534AB7"></i> AI Analysis <span class="ai-badge">Claude AI</span></div>
-      <div style="font-size:11px;color:var(--text-hint);margin-top:2px">วิเคราะห์ข้อมูล issue ทั้งหมด สำหรับผู้บริหาร</div>
+      <div style="font-size:11px;color:var(--text-hint);margin-top:2px">วิเคราะห์ข้อมูล issue สำหรับผู้บริหาร</div>
     </div>
-    <button class="btn-ai" id="btn-ai" onclick="runAiAnalysis()">
-      <i class="fa-solid fa-wand-magic-sparkles"></i> วิเคราะห์
-    </button>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" id="btn-change-key" onclick="showKeyInput()" style="font-size:11px;display:none">
+        <i class="fa-solid fa-gear"></i> เปลี่ยน Key
+      </button>
+      <button class="btn-ai" id="btn-ai">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> วิเคราะห์
+      </button>
+    </div>
   </div>
-  <div id="ai-output" style="display:none"></div>
+  <!-- API Key section -->
+  <div id="api-key-section">
+    <div class="api-key-saved" id="key-saved-msg" style="display:none">
+      <i class="fa-solid fa-circle-check"></i> API Key พร้อมใช้งาน — กดวิเคราะห์ได้เลย
+    </div>
+    <div id="key-input-area">
+      <div class="api-key-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>ต้องการ <strong>Anthropic API Key</strong> เพื่อใช้ AI Analysis — key จะเก็บใน browser ของคุณเท่านั้น ไม่ส่งออกไปที่อื่น</div>
+      </div>
+      <div class="api-key-form">
+        <input type="password" class="api-key-input" id="api-key-input" placeholder="sk-ant-api03-...">
+        <button class="btn btn-primary btn-sm" id="btn-save-key"><i class="fa-solid fa-floppy-disk"></i> บันทึก Key</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-hint);margin-top:6px">
+        รับ API Key ได้ที่ <a href="https://console.anthropic.com" target="_blank" style="color:var(--purple)">console.anthropic.com</a> (ฟรีสำหรับการทดสอบ)
+      </div>
+    </div>
+  </div>
+  <div id="ai-output" style="display:none;margin-top:12px"></div>
 </div>
 
 <div class="kb-board">
@@ -430,14 +459,51 @@ function closeModal(e){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('issue-modal').style.display='none';});
 
 // ── Event listeners ทั้งหมด ผูกหลัง DOM load ──
-// AI Analysis
+// ── API Key management ──
+function getApiKey(){ return localStorage.getItem('tmt_anthropic_key')||''; }
+
+function initKeyUI(){
+  const key = getApiKey();
+  if(key){
+    document.getElementById('key-input-area').style.display='none';
+    document.getElementById('key-saved-msg').style.display='flex';
+    document.getElementById('btn-change-key').style.display='inline-flex';
+  } else {
+    document.getElementById('key-input-area').style.display='block';
+    document.getElementById('key-saved-msg').style.display='none';
+    document.getElementById('btn-change-key').style.display='none';
+  }
+}
+
+function showKeyInput(){
+  document.getElementById('key-input-area').style.display='block';
+  document.getElementById('key-saved-msg').style.display='none';
+  document.getElementById('api-key-input').value='';
+  document.getElementById('api-key-input').focus();
+}
+
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key || !key.startsWith('sk-ant')){
+    alert('API Key ไม่ถูกต้อง — ต้องขึ้นต้นด้วย sk-ant...');
+    return;
+  }
+  localStorage.setItem('tmt_anthropic_key', key);
+  initKeyUI();
+  showToast('\u2705 \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 API Key \u0e41\u0e25\u0e49\u0e27');
+}
+
+// ── AI Analysis ──
 async function runAiAnalysis(){
+  const key = getApiKey();
+  if(!key){ showToast('\u26a0\ufe0f \u0e01\u0e23\u0e38\u0e13\u0e32\u0e43\u0e2a\u0e48 API Key \u0e01\u0e48\u0e2d\u0e19'); return; }
+
   const btn=document.getElementById('btn-ai');
   const output=document.getElementById('ai-output');
   btn.disabled=true;
   btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> \u0e01\u0e33\u0e25\u0e31\u0e07\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c...';
   output.style.display='block';
-  output.innerHTML='<div class="ai-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Claude \u0e01\u0e33\u0e25\u0e31\u0e07\u0e2d\u0e48\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e41\u0e25\u0e30\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c...</div>';
+  output.innerHTML='<div class="ai-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Claude \u0e01\u0e33\u0e25\u0e31\u0e07\u0e2d\u0e48\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25...</div>';
 
   try{
     const lf=document.getElementById('filter-line').value;
@@ -449,78 +515,104 @@ async function runAiAnalysis(){
 
     const machineCount={};
     const lineCount={};
-    issues.forEach(i=>{
+    const assigneeCount={};
+    issues.filter(i=>i.status!=='closed').forEach(i=>{
       if(i.machineName) machineCount[i.machineName]=(machineCount[i.machineName]||0)+1;
       if(i.lineName) lineCount[i.lineName]=(lineCount[i.lineName]||0)+1;
+      if(i.assignee) assigneeCount[i.assignee]=(assigneeCount[i.assignee]||0)+1;
     });
-    const topMachines=Object.entries(machineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v+' issues').join(', ');
-    const topLines=Object.entries(lineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v+' issues').join(', ');
-    const highSev=issues.filter(i=>i.severity==='high'&&i.status!=='closed');
-    const safetyOpen=issues.filter(i=>i.issueType==='safety'&&i.status!=='closed');
+    const topMachines=Object.entries(machineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v).join(', ');
+    const topLines=Object.entries(lineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v).join(', ');
+    const topAssignees=Object.entries(assigneeCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v).join(', ');
+    const highSev=issues.filter(i=>i.severity==='high'&&i.status!=='closed').length;
+    const safetyOpen=issues.filter(i=>i.issueType==='safety'&&i.status!=='closed').length;
     const closeRate=issues.length>0?Math.round(closed.length/issues.length*100):0;
+    const avgDaysOpen = open.length > 0 ? Math.round(
+      open.filter(i=>i.createdAt?.seconds).reduce((s,i)=>{
+        return s + (Date.now()/1000 - i.createdAt.seconds)/86400;
+      },0) / open.filter(i=>i.createdAt?.seconds).length
+    ) : 0;
 
-    const summaryText=[
-      'Issue Tracker TMT Steel',
-      'Total: '+issues.length,
-      'Open: '+open.length+' | InProgress: '+prog.length+' | Closed: '+closed.length,
-      'Overdue: '+overdue.length,
-      'High severity (open): '+highSev.length,
-      'Safety issues (open): '+safetyOpen.length,
-      'Top machines: '+(topMachines||'-'),
-      'Top lines: '+(topLines||'-'),
-      'Close rate: '+closeRate+'%'
+    const summaryText = [
+      'ข้อมูล Issue Tracker โรงงาน TMT Steel',
+      'รวมทั้งหมด: '+issues.length+' รายการ',
+      'Open: '+open.length+' | In Progress: '+prog.length+' | Closed: '+closed.length,
+      'เลย Due Date: '+overdue.length+' รายการ',
+      'ความเร่งด่วนสูง (ยังไม่ปิด): '+highSev+' รายการ',
+      'Safety Issue ที่ยังเปิดอยู่: '+safetyOpen+' รายการ',
+      'อัตราการปิด issue: '+closeRate+'%',
+      'เฉลี่ยวันที่เปิดค้าง: '+avgDaysOpen+' วัน',
+      'เครื่องจักรที่มีปัญหาบ่อย (open): '+(topMachines||'-'),
+      'ไลน์ที่มีปัญหาบ่อย (open): '+(topLines||'-'),
+      'ผู้รับผิดชอบที่มีงานมาก: '+(topAssignees||'-')
     ].join('\n');
 
-    const promptText = '\u0e04\u0e38\u0e13\u0e40\u0e1b\u0e47\u0e19 Production Engineer \u0e17\u0e35\u0e48\u0e40\u0e0a\u0e35\u0e48\u0e22\u0e27\u0e0a\u0e32\u0e0d\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e42\u0e23\u0e07\u0e07\u0e32\u0e19\u0e40\u0e2b\u0e25\u0e47\u0e01\n\n'
-      + summaryText
-      + '\n\n\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e40\u0e1b\u0e47\u0e19\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 \u0e41\u0e1a\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19 3 \u0e2a\u0e48\u0e27\u0e19:\n1. \u0e2a\u0e23\u0e38\u0e1b\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\n2. \u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e23\u0e48\u0e07\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\n3. \u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e1b\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e38\u0e07\n\u0e43\u0e0a\u0e49\u0e20\u0e32\u0e29\u0e32\u0e01\u0e23\u0e30\u0e0a\u0e31\u0e1a \u0e40\u0e2b\u0e21\u0e32\u0e30\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e01\u0e25\u0e32\u0e07';
-
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:promptText}]
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: '\u0e04\u0e38\u0e13\u0e40\u0e1b\u0e47\u0e19\u0e17\u0e35\u0e48\u0e1b\u0e23\u0e36\u0e01\u0e29\u0e32\u0e14\u0e49\u0e32\u0e19\u0e01\u0e32\u0e23\u0e1c\u0e25\u0e34\u0e15\u0e41\u0e25\u0e30\u0e27\u0e34\u0e28\u0e27\u0e01\u0e23\u0e23\u0e21\u0e42\u0e23\u0e07\u0e07\u0e32\u0e19\u0e40\u0e2b\u0e25\u0e47\u0e01\n\n'
+            + summaryText
+            + '\n\n\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e40\u0e1b\u0e47\u0e19\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23 \u0e41\u0e1a\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19:\n\n**1. \u0e2a\u0e23\u0e38\u0e1b\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21**\n(\u0e2a\u0e34\u0e48\u0e07\u0e17\u0e35\u0e48\u0e19\u0e48\u0e32\u0e01\u0e31\u0e07\u0e27\u0e25\u0e41\u0e25\u0e30\u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e43\u0e19 2-3 \u0e1b\u0e23\u0e30\u0e42\u0e22\u0e04)\n\n**2. \u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e23\u0e48\u0e07\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23**\n(\u0e23\u0e30\u0e1a\u0e38\u0e40\u0e1b\u0e47\u0e19\u0e02\u0e49\u0e2d\u0e46)\n\n**3. \u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e1b\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e38\u0e07**\n(\u0e23\u0e30\u0e1a\u0e38\u0e40\u0e1b\u0e47\u0e19\u0e02\u0e49\u0e2d\u0e46 \u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e17\u0e35\u0e48\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e44\u0e14\u0e49\u0e17\u0e31\u0e19\u0e17\u0e35)'
+        }]
       })
     });
-    const data=await resp.json();
-    const rawText=(data.content&&data.content[0]&&data.content[0].text)||'ไม่สามารถวิเคราะห์ได้';
 
-    const parts=rawText.split(/\n(?=\d+\.|\u2022|-{3,})/);
-    let html='';
-    rawText.split('\n').reduce((acc,line)=>{
-      const trimmed=line.trim();
-      if(!trimmed) return acc;
-      if(/^1\./.test(trimmed)||trimmed.includes('\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21')){
-        if(acc.title) html+='<div class="ai-block"><div class="ai-block-title ai-sum"><i class="fa-solid fa-chart-bar"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
-        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[]};
-      } else if(/^2\./.test(trimmed)||trimmed.includes('\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07')){
-        if(acc.title) html+='<div class="ai-block"><div class="ai-block-title ai-sum"><i class="fa-solid fa-chart-bar"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
-        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[],type:'risk'};
-      } else if(/^3\./.test(trimmed)||trimmed.includes('\u0e42\u0e2d\u0e01\u0e32\u0e2a')){
-        if(acc.title){
-          const icon=acc.type==='risk'?'fa-triangle-exclamation':'fa-chart-bar';
-          const cls=acc.type==='risk'?'ai-risk':'ai-sum';
-          html+='<div class="ai-block"><div class="ai-block-title '+cls+'"><i class="fa-solid '+icon+'"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
-        }
-        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[],type:'opp'};
+    const data = await resp.json();
+    if(data.error){
+      if(data.error.type === 'authentication_error'){
+        showToast('\u274c API Key \u0e44\u0e21\u0e48\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07 \u0e01\u0e23\u0e38\u0e13\u0e32\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e43\u0e2b\u0e21\u0e48');
+        localStorage.removeItem('tmt_anthropic_key');
+        initKeyUI();
       } else {
-        acc.lines.push(trimmed.startsWith('-')||trimmed.startsWith('\u2022')?'&bull; '+trimmed.slice(1).trim():trimmed);
-        return acc;
+        throw new Error(data.error.message||'API error');
       }
-    },{title:'',lines:[]});
+      output.style.display='none';
+      return;
+    }
 
-    output.innerHTML=html||('<div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+rawText+'</div>');
+    const rawText = (data.content&&data.content[0]&&data.content[0].text)||'';
+    if(!rawText){ throw new Error('ไม่ได้รับข้อมูลจาก AI'); }
+
+    // render markdown-like response
+    const rendered = rawText
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^###\s+(.+)$/gm,'<div class="ai-block-title ai-sum" style="margin-top:10px"><i class="fa-solid fa-chart-bar"></i> $1</div>')
+      .replace(/^##\s+(.+)$/gm,'<div class="ai-block-title ai-sum" style="margin-top:10px"><i class="fa-solid fa-chart-bar"></i> $1</div>')
+      .replace(/^1\.\s+\*\*(.+?)\*\*/gm,'<div class="ai-block"><div class="ai-block-title ai-sum"><i class="fa-solid fa-chart-bar"></i> $1</div>')
+      .replace(/^2\.\s+\*\*(.+?)\*\*/gm,'</div><div class="ai-block"><div class="ai-block-title ai-risk"><i class="fa-solid fa-triangle-exclamation"></i> $1</div>')
+      .replace(/^3\.\s+\*\*(.+?)\*\*/gm,'</div><div class="ai-block"><div class="ai-block-title ai-opp"><i class="fa-solid fa-lightbulb"></i> $1</div>')
+      .replace(/^[-•]\s+(.+)$/gm,'<div style="padding:2px 0 2px 12px;font-size:13px;color:var(--text-sub)">&#8226; $1</div>')
+      .replace(/\n\n/g,'<br>')
+      .replace(/\n/g,'');
+
+    output.innerHTML = '<div style="line-height:1.7">' + rendered + '</div></div>';
   }catch(e){
-    output.innerHTML='<div style="color:var(--coral-text);font-size:13px"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>';
+    output.innerHTML='<div style="color:var(--coral-text);font-size:13px;padding:10px"><i class="fa-solid fa-triangle-exclamation"></i> \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08: '+e.message+'</div>';
   }finally{
     btn.disabled=false;
     btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e43\u0e2b\u0e21\u0e48';
   }
 }
 
+
+
 document.getElementById('last-updated').addEventListener('click', loadAll);
+document.getElementById('btn-ai').addEventListener('click', runAiAnalysis);
+document.getElementById('btn-save-key').addEventListener('click', saveApiKey);
+document.getElementById('api-key-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter') saveApiKey();
+});
+initKeyUI();
 document.getElementById('kb-add-btn').addEventListener('click', ()=>location.href='report.html');
 document.getElementById('filter-line').addEventListener('change', renderKanban);
 

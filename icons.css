@@ -1,0 +1,53 @@
+/* Self-hosted SVG icons as CSS — replaces Font Awesome CDN */
+/* ใช้ Unicode symbols แทนเพื่อหลีกเลี่ยง CDN dependency */
+.fa-solid,.fa-regular,.fa-brands{display:inline-block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:1}
+i[class*="fa-"]{display:inline-block;width:1em;text-align:center}
+
+/* icon map using Unicode/emoji fallbacks */
+.fa-arrow-left::before{content:"←"}
+.fa-arrow-right::before{content:"→"}
+.fa-calendar::before{content:"📅"}
+.fa-chart-bar::before{content:"📊"}
+.fa-check::before{content:"✓"}
+.fa-check-circle::before{content:"✓"}
+.fa-chevron-down::before{content:"▾"}
+.fa-circle::before{content:"●"}
+.fa-circle-check::before{content:"✅"}
+.fa-circle-exclamation::before{content:"❗"}
+.fa-circle-half-stroke::before{content:"◑"}
+.fa-circle-notch::before{content:"◌"}
+.fa-clock::before{content:"⏰"}
+.fa-clock-rotate-left::before{content:"⏰"}
+.fa-comments::before{content:"💬"}
+.fa-file-lines::before{content:"📄"}
+.fa-floppy-disk::before{content:"💾"}
+.fa-gavel::before{content:"⚖"}
+.fa-gear::before{content:"⚙"}
+.fa-lightbulb::before{content:"💡"}
+.fa-link::before{content:"🔗"}
+.fa-list-check::before{content:"✅"}
+.fa-list-ol::before{content:"📋"}
+.fa-list-ul::before{content:"📋"}
+.fa-magnifying-glass::before{content:"🔍"}
+.fa-paper-plane::before{content:"✈"}
+.fa-pen::before{content:"✏"}
+.fa-pen-to-square::before{content:"✏"}
+.fa-person-chalkboard::before{content:"👨‍🏫"}
+.fa-plus::before{content:"+"}
+.fa-robot::before{content:"🤖"}
+.fa-rotate-left::before{content:"↺"}
+.fa-rotate-right::before{content:"↻"}
+.fa-shield::before{content:"🛡"}
+.fa-shield-halved::before{content:"🛡"}
+.fa-shuffle::before{content:"⇄"}
+.fa-sliders::before{content:"⚙"}
+.fa-table-columns::before{content:"▦"}
+.fa-trash::before{content:"🗑"}
+.fa-triangle-exclamation::before{content:"⚠"}
+.fa-user::before{content:"👤"}
+.fa-wand-magic-sparkles::before{content:"✨"}
+.fa-xmark::before{content:"✕"}
+
+/* spin animation */
+@keyframes fa-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.fa-spin{animation:fa-spin 1s linear infinite;display:inline-block}
