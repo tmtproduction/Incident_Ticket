@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TMT — Kanban</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
@@ -430,14 +430,14 @@ function closeModal(e){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('issue-modal').style.display='none';});
 
 // ── Event listeners ทั้งหมด ผูกหลัง DOM load ──
-// ── AI Analysis ──
+// AI Analysis
 async function runAiAnalysis(){
   const btn=document.getElementById('btn-ai');
   const output=document.getElementById('ai-output');
   btn.disabled=true;
-  btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังวิเคราะห์...';
+  btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> \u0e01\u0e33\u0e25\u0e31\u0e07\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c...';
   output.style.display='block';
-  output.innerHTML='<div class="ai-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Claude กำลังอ่านข้อมูลและวิเคราะห์...</div>';
+  output.innerHTML='<div class="ai-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Claude \u0e01\u0e33\u0e25\u0e31\u0e07\u0e2d\u0e48\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e41\u0e25\u0e30\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c...</div>';
 
   try{
     const lf=document.getElementById('filter-line').value;
@@ -447,27 +447,33 @@ async function runAiAnalysis(){
     const closed=issues.filter(i=>i.status==='closed');
     const overdue=open.filter(i=>isOverdue(i));
 
-    // สรุปข้อมูลส่ง AI
     const machineCount={};
     const lineCount={};
     issues.forEach(i=>{
       if(i.machineName) machineCount[i.machineName]=(machineCount[i.machineName]||0)+1;
       if(i.lineName) lineCount[i.lineName]=(lineCount[i.lineName]||0)+1;
     });
-    const topMachines=Object.entries(machineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}: ${v} issues`).join(', ');
-    const topLines=Object.entries(lineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}: ${v} issues`).join(', ');
+    const topMachines=Object.entries(machineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v+' issues').join(', ');
+    const topLines=Object.entries(lineCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v+' issues').join(', ');
     const highSev=issues.filter(i=>i.severity==='high'&&i.status!=='closed');
     const safetyOpen=issues.filter(i=>i.issueType==='safety'&&i.status!=='closed');
+    const closeRate=issues.length>0?Math.round(closed.length/issues.length*100):0;
 
-    const summary=`ข้อมูลระบบ Issue Tracker โรงงาน TMT Steel
-- Issue ทั้งหมด: ${issues.length} รายการ
-- Open: ${open.length} | In Progress: ${prog.length} | Closed: ${closed.length}
-- เลย Due Date: ${overdue.length} รายการ
-- ความเร่งด่วนสูง (ยังไม่ปิด): ${highSev.length} รายการ
-- Safety Issue ที่ยังเปิดอยู่: ${safetyOpen.length} รายการ
-- เครื่องจักรที่มีปัญหาบ่อย: ${topMachines||'ไม่มีข้อมูล'}
-- ไลน์ที่มีปัญหาบ่อย: ${topLines||'ไม่มีข้อมูล'}
-- อัตราการปิด issue: ${issues.length>0?Math.round(closed.length/issues.length*100):0}%`;
+    const summaryText=[
+      'Issue Tracker TMT Steel',
+      'Total: '+issues.length,
+      'Open: '+open.length+' | InProgress: '+prog.length+' | Closed: '+closed.length,
+      'Overdue: '+overdue.length,
+      'High severity (open): '+highSev.length,
+      'Safety issues (open): '+safetyOpen.length,
+      'Top machines: '+(topMachines||'-'),
+      'Top lines: '+(topLines||'-'),
+      'Close rate: '+closeRate+'%'
+    ].join('\n');
+
+    const promptText = '\u0e04\u0e38\u0e13\u0e40\u0e1b\u0e47\u0e19 Production Engineer \u0e17\u0e35\u0e48\u0e40\u0e0a\u0e35\u0e48\u0e22\u0e27\u0e0a\u0e32\u0e0d\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e42\u0e23\u0e07\u0e07\u0e32\u0e19\u0e40\u0e2b\u0e25\u0e47\u0e01\n\n'
+      + summaryText
+      + '\n\n\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e40\u0e1b\u0e47\u0e19\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 \u0e41\u0e1a\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19 3 \u0e2a\u0e48\u0e27\u0e19:\n1. \u0e2a\u0e23\u0e38\u0e1b\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\n2. \u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e23\u0e48\u0e07\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\n3. \u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e1b\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e38\u0e07\n\u0e43\u0e0a\u0e49\u0e20\u0e32\u0e29\u0e32\u0e01\u0e23\u0e30\u0e0a\u0e31\u0e1a \u0e40\u0e2b\u0e21\u0e32\u0e30\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e01\u0e25\u0e32\u0e07';
 
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -475,60 +481,42 @@ async function runAiAnalysis(){
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1000,
-        messages:[{role:'user',content:`คุณเป็น Production Engineer ที่เชี่ยวชาญการวิเคราะห์ข้อมูลโรงงานเหล็ก
-
-${summary}
-
-วิเคราะห์และสรุปเป็นภาษาไทยสำหรับผู้บริหาร โดยแบ่งเป็น 3 ส่วน:
-
-1. 📊 สรุปภาพรวม (2-3 ประโยค)
-2. ⚠️ ความเสี่ยงที่ต้องดำเนินการเร่งด่วน (bullet points)
-3. 💡 โอกาสปรับปรุง (bullet points)
-
-ใช้ภาษากระชับ เข้าใจง่าย เหมาะสำหรับผู้บริหารระดับกลาง`}]
+        messages:[{role:'user',content:promptText}]
       })
     });
     const data=await resp.json();
-    const text=data.content?.[0]?.text||'ไม่สามารถวิเคราะห์ได้';
+    const rawText=(data.content&&data.content[0]&&data.content[0].text)||'ไม่สามารถวิเคราะห์ได้';
 
-    // parse sections
-    const lines=text.split('
-');
+    const parts=rawText.split(/\n(?=\d+\.|\u2022|-{3,})/);
     let html='';
-    let currentSection='';
-    let sectionContent=[];
-
-    const flushSection=()=>{
-      if(!currentSection||!sectionContent.length) return;
-      const isRisk=currentSection.includes('ความเสี่ยง');
-      const isOpp=currentSection.includes('โอกาส');
-      const cls=isRisk?'ai-risk':isOpp?'ai-opp':'ai-sum';
-      const icon=isRisk?'fa-triangle-exclamation':isOpp?'fa-lightbulb':'fa-chart-bar';
-      html+=`<div class="ai-block">
-        <div class="ai-block-title ${cls}"><i class="fa-solid ${icon}"></i> ${currentSection}</div>
-        <div style="font-size:13px;color:var(--text-sub);line-height:1.7">${sectionContent.map(l=>l.startsWith('-')||l.startsWith('•')?`<div style="padding-left:8px">${l}</div>`:l).join('<br>')}</div>
-      </div>`;
-      sectionContent=[];
-    };
-
-    lines.forEach(l=>{
-      const trimmed=l.trim();
-      if(!trimmed) return;
-      if(trimmed.match(/^\d+\./)||trimmed.includes('สรุปภาพรวม')||trimmed.includes('ความเสี่ยง')||trimmed.includes('โอกาส')){
-        flushSection();
-        currentSection=trimmed.replace(/^\d+\.\s*/,'');
+    rawText.split('\n').reduce((acc,line)=>{
+      const trimmed=line.trim();
+      if(!trimmed) return acc;
+      if(/^1\./.test(trimmed)||trimmed.includes('\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21')){
+        if(acc.title) html+='<div class="ai-block"><div class="ai-block-title ai-sum"><i class="fa-solid fa-chart-bar"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
+        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[]};
+      } else if(/^2\./.test(trimmed)||trimmed.includes('\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07')){
+        if(acc.title) html+='<div class="ai-block"><div class="ai-block-title ai-sum"><i class="fa-solid fa-chart-bar"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
+        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[],type:'risk'};
+      } else if(/^3\./.test(trimmed)||trimmed.includes('\u0e42\u0e2d\u0e01\u0e32\u0e2a')){
+        if(acc.title){
+          const icon=acc.type==='risk'?'fa-triangle-exclamation':'fa-chart-bar';
+          const cls=acc.type==='risk'?'ai-risk':'ai-sum';
+          html+='<div class="ai-block"><div class="ai-block-title '+cls+'"><i class="fa-solid '+icon+'"></i> '+acc.title+'</div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+acc.lines.join('<br>')+'</div></div>';
+        }
+        return {title:trimmed.replace(/^\d+\.\s*/,''),lines:[],type:'opp'};
       } else {
-        sectionContent.push(trimmed);
+        acc.lines.push(trimmed.startsWith('-')||trimmed.startsWith('\u2022')?'&bull; '+trimmed.slice(1).trim():trimmed);
+        return acc;
       }
-    });
-    flushSection();
+    },{title:'',lines:[]});
 
-    output.innerHTML=html||`<div class="ai-content">${text}</div>`;
+    output.innerHTML=html||('<div style="font-size:13px;color:var(--text-sub);line-height:1.7">'+rawText+'</div>');
   }catch(e){
-    output.innerHTML=`<div style="color:var(--coral-text);font-size:13px"><i class="fa-solid fa-triangle-exclamation"></i> วิเคราะห์ไม่ได้: ${e.message}</div>`;
+    output.innerHTML='<div style="color:var(--coral-text);font-size:13px"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>';
   }finally{
     btn.disabled=false;
-    btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> วิเคราะห์ใหม่';
+    btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e43\u0e2b\u0e21\u0e48';
   }
 }
 
