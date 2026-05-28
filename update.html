@@ -8,32 +8,28 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-/* ── Mobile bottom nav ── */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-border);z-index:200;padding:6px 0 env(safe-area-inset-bottom)}
 .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-sub);text-decoration:none;padding:4px 0}
 .bottom-nav a.active{color:var(--purple)}
 .bottom-nav a i{font-size:20px}
 @media(max-width:600px){.bottom-nav{display:flex}.topbar-nav{display:none}.page{padding-bottom:80px}}
 
-/* ── Issue list cards (pick mode) ── */
-.pick-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.pick-title{font-size:15px;font-weight:600}
-.pick-count{font-size:12px;color:var(--text-sub)}
+/* pick list */
 .pick-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .pf-btn{padding:4px 12px;border-radius:20px;font-size:12px;border:1px solid var(--gray-border);background:#fff;cursor:pointer;color:var(--text-sub)}
 .pf-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
 .pick-search{display:flex;gap:8px;margin-bottom:14px}
 .pick-search input{flex:1;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:9px 12px;font-size:14px;font-family:inherit}
-.pick-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;transition:box-shadow .15s,border-color .15s}
-.pick-card:hover,.pick-card:active{box-shadow:0 2px 8px rgba(0,0,0,.1);border-color:#bbb}
+.pick-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;transition:box-shadow .15s}
+.pick-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);border-color:#bbb}
 .pick-card.open{border-left:3px solid var(--coral)}
 .pick-card.inprogress{border-left:3px solid #EF9F27}
+.pick-card.closed{border-left:3px solid var(--green)}
 .pick-body{flex:1;min-width:0}
 .pick-name{font-size:14px;font-weight:500;margin-bottom:2px}
 .pick-meta{font-size:11px;color:var(--text-hint)}
-.pick-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 
-/* ── Detail / update area ── */
+/* detail */
 .det-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
 .det-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
 .det-body h2{font-size:15px;font-weight:600;margin-bottom:3px;line-height:1.3}
@@ -41,36 +37,51 @@
 .det-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .chip{display:inline-flex;align-items:center;gap:4px;background:var(--gray-bg);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-sub)}
 .det-desc{font-size:13px;color:var(--text-sub);border-top:1px solid var(--gray-border);padding-top:10px;margin-top:10px;line-height:1.6}
-.back-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.back-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-sub);cursor:pointer;background:none;border:none;padding:0}
-.back-btn:hover{color:var(--text)}
 
-/* ── sev colors ── */
-.sev-high{color:var(--coral);font-weight:500}
-.sev-medium{color:var(--amber);font-weight:500}
-.sev-low{color:var(--green);font-weight:500}
-
-/* ── Update form ── */
+/* status pills */
 .status-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
-.status-pill{flex:1;min-width:100px;padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--gray-border);text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;background:#fff;color:var(--text-sub)}
+.status-pill{flex:1;min-width:90px;padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--gray-border);text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;background:#fff;color:var(--text-sub)}
 .status-pill.sel-open{border-color:var(--coral);background:#fff8f6;color:var(--coral)}
 .status-pill.sel-inprogress{border-color:#EF9F27;background:#fffbf0;color:#854F0B}
 .status-pill.sel-closed{border-color:var(--green);background:#f4fbed;color:var(--green)}
 .big-btn{width:100%;padding:14px;font-size:15px;border-radius:var(--radius-sm);border:none;background:var(--purple);color:#fff;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
-.big-btn:active{opacity:.85}
-.big-btn:disabled{opacity:.5}
+.big-btn:active{opacity:.85}.big-btn:disabled{opacity:.5}
 
-/* ── Timeline ── */
-.tl-wrap{margin-top:4px}
+/* timeline with edit/delete */
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:26px;bottom:0;width:1px;background:var(--gray-border)}
+.tl-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.tl-dot.open{background:var(--coral-light);color:var(--coral)}
+.tl-dot.inprogress{background:var(--amber-light);color:var(--amber)}
+.tl-dot.closed{background:var(--green-light);color:var(--green)}
+.tl-body{flex:1}
+.tl-action{font-size:13px;font-weight:500}
+.tl-detail{font-size:12px;color:var(--text-sub);margin-top:2px;line-height:1.5}
+.tl-time{font-size:10px;color:var(--text-hint);margin-top:3px}
+.tl-actions{display:flex;gap:6px;margin-top:5px;opacity:0;transition:opacity .15s}
+.tl-item:hover .tl-actions{opacity:1}
+.tl-edit-btn,.tl-del-btn{background:none;border:1px solid var(--gray-border);border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px}
+.tl-edit-btn:hover{background:var(--purple-light);color:var(--purple);border-color:var(--purple)}
+.tl-del-btn{color:var(--coral-text);border-color:var(--coral-light)}
+.tl-del-btn:hover{background:var(--coral-light)}
+
+/* edit issue modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-box{background:#fff;border-radius:var(--radius);width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--gray-border);position:sticky;top:0;background:#fff}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-sub);padding:4px 8px;border-radius:var(--radius-sm)}
+.modal-close:hover{background:var(--gray-bg)}
+.modal-body{padding:18px}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;bottom:0;background:#fff}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="topbar-brand">
-    <div class="logo">TMT</div>
-    <span>Issue Tracker</span>
-  </div>
+  <div class="topbar-brand"><div class="logo">TMT</div><span>Issue Tracker</span></div>
   <nav class="topbar-nav">
     <a href="index.html"><i class="fa-solid fa-table-columns"></i> Kanban</a>
     <a href="propose.html"><i class="fa-solid fa-lightbulb"></i> เสนอปัญหา</a>
@@ -83,45 +94,40 @@
 
 <div class="page" style="max-width:680px">
 
-  <!-- ══ SECTION A: เลือก issue ══ -->
+  <!-- ══ PICK ══ -->
   <div id="sec-pick">
     <div class="page-header" style="margin-bottom:14px">
-      <div>
-        <div class="page-title">เลือก issue ที่จะอัพเดท</div>
-        <div class="page-sub">แสดงเฉพาะ issue ที่ยังเปิดอยู่</div>
-      </div>
+      <div><div class="page-title">เลือก Issue</div><div class="page-sub">แสดงทุก issue — เลือกเพื่ออัพเดทหรือแก้ไข</div></div>
     </div>
-
-    <!-- filter pills -->
     <div class="pick-filter">
       <button class="pf-btn active" data-f="all">ทั้งหมด</button>
       <button class="pf-btn" data-f="open">🔴 Open</button>
       <button class="pf-btn" data-f="inprogress">🟡 In Progress</button>
-      <button class="pf-btn" data-f="machine"><i class="fa-solid fa-gear"></i> เครื่องจักร</button>
-      <button class="pf-btn" data-f="safety"><i class="fa-solid fa-triangle-exclamation"></i> Safety</button>
+      <button class="pf-btn" data-f="closed">🟢 Closed</button>
+      <button class="pf-btn" data-f="machine">เครื่องจักร</button>
+      <button class="pf-btn" data-f="safety">Safety</button>
     </div>
-
-    <!-- live search -->
     <div class="pick-search">
       <input type="text" id="live-search" placeholder="🔍  ค้นหาชื่อปัญหา หรือผู้รับผิดชอบ..." oninput="renderPick()">
     </div>
-
-    <div class="pick-header">
-      <span class="pick-title">รายการปัญหา</span>
-      <span class="pick-count" id="pick-count">กำลังโหลด...</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:12px;font-weight:500">รายการ</span>
+      <span class="page-sub" id="pick-count">—</span>
     </div>
     <div id="pick-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
   </div>
 
-  <!-- ══ SECTION B: อัพเดท ══ -->
+  <!-- ══ UPDATE ══ -->
   <div id="sec-update" style="display:none">
-
-    <div class="back-row" style="justify-content:space-between">
+    <div class="back-row">
       <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> กลับรายการ</button>
-      <a id="tasks-link" href="tasks.html" class="btn btn-ghost btn-sm" style="color:var(--purple);font-size:12px"><i class="fa-solid fa-list-check"></i> Tasks</a>
+      <div style="display:flex;gap:8px">
+        <a id="tasks-link" href="tasks.html" class="btn btn-ghost btn-sm" style="color:var(--purple);font-size:12px"><i class="fa-solid fa-list-check"></i> Tasks</a>
+        <button class="btn btn-ghost btn-sm" onclick="openEditIssue()" style="font-size:12px"><i class="fa-solid fa-pen"></i> แก้ไข Issue</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteIssue()" style="font-size:12px;color:var(--coral-text)"><i class="fa-solid fa-trash"></i> ลบ</button>
+      </div>
     </div>
 
-    <!-- detail card -->
     <div class="det-card" id="det-card">
       <div class="det-top">
         <div class="issue-icon" id="det-icon"></div>
@@ -138,7 +144,6 @@
     <!-- update form -->
     <div class="card">
       <div class="card-title" style="margin-bottom:10px">บันทึกความคืบหน้า</div>
-
       <div class="field" style="margin-bottom:12px">
         <label>เปลี่ยนสถานะเป็น</label>
         <div class="status-pills">
@@ -147,28 +152,24 @@
           <div class="status-pill" data-s="closed" onclick="selectStatus('closed')">🟢 Closed<br><span style="font-weight:400;font-size:11px">เสร็จแล้ว</span></div>
         </div>
       </div>
-
       <div class="field" style="margin-bottom:12px">
         <label>ชื่อผู้อัพเดท *</label>
         <input type="text" id="updated-by" placeholder="ชื่อ-นามสกุล" style="font-size:15px;padding:10px 12px">
       </div>
-
       <div class="field" style="margin-bottom:12px">
         <label>รายละเอียดความคืบหน้า *</label>
-        <textarea id="update-note" placeholder="ทำอะไรไปแล้วบ้าง เจอปัญหาอะไร หรือผลหลังแก้ไข..." style="min-height:90px;font-size:14px;padding:10px 12px"></textarea>
+        <textarea id="update-note" placeholder="ทำอะไรไปแล้ว เจอปัญหาอะไร หรือผลหลังแก้ไข..." style="min-height:90px;font-size:14px;padding:10px 12px"></textarea>
       </div>
-
       <div id="close-fields" style="display:none">
         <div class="field" style="margin-bottom:12px">
-          <label>Root Cause — สาเหตุที่แท้จริง</label>
-          <textarea id="root-cause" placeholder="ระบุสาเหตุของปัญหา..." style="font-size:14px;padding:10px 12px"></textarea>
+          <label>Root Cause</label>
+          <textarea id="root-cause" style="font-size:14px;padding:10px 12px"></textarea>
         </div>
         <div class="field" style="margin-bottom:12px">
-          <label>Corrective Action — วิธีแก้ไขที่ทำไปแล้ว</label>
-          <textarea id="corrective-action" placeholder="ระบุขั้นตอนแก้ไข..." style="font-size:14px;padding:10px 12px"></textarea>
+          <label>Corrective Action</label>
+          <textarea id="corrective-action" style="font-size:14px;padding:10px 12px"></textarea>
         </div>
       </div>
-
       <button class="big-btn" id="update-btn" onclick="submitUpdate()">
         <i class="fa-solid fa-floppy-disk"></i> บันทึกการอัพเดท
       </button>
@@ -177,83 +178,143 @@
     <!-- timeline -->
     <div class="card">
       <div class="card-title">ประวัติการอัพเดท</div>
-      <div class="timeline tl-wrap" id="timeline"><div class="loading">กำลังโหลด...</div></div>
+      <div id="timeline"><div class="loading">กำลังโหลด...</div></div>
     </div>
-
   </div>
 </div>
 
-<!-- Bottom nav mobile -->
+<!-- ══ EDIT ISSUE MODAL ══ -->
+<div class="modal-overlay" id="edit-issue-modal" style="display:none" onclick="closeEditIssueModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen-to-square" style="color:var(--purple)"></i> แก้ไขข้อมูล Issue</div>
+      <button class="modal-close" onclick="document.getElementById('edit-issue-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>ประเภท</label>
+          <select id="ei-type"><option value="machine">🔧 เครื่องจักร</option><option value="safety">⚠️ Safety</option></select></div>
+        <div class="field"><label>ผู้รายงาน</label><input type="text" id="ei-reporter"></div>
+        <div class="field full"><label>หัวข้อปัญหา *</label><input type="text" id="ei-title"></div>
+        <div class="field full"><label>รายละเอียด *</label><textarea id="ei-desc" style="min-height:80px"></textarea></div>
+        <div class="field full"><label>มาตรการเบื้องต้น</label><textarea id="ei-init"></textarea></div>
+        <div class="field"><label>ผู้รับผิดชอบ</label>
+          <select id="ei-assignee"><option value="">— เลือก —</option></select></div>
+        <div class="field"><label>กำหนดเสร็จ</label><input type="date" id="ei-due"></div>
+        <div class="field"><label>ระดับความเร่งด่วน</label>
+          <select id="ei-sev"><option value="low">🟢 Low</option><option value="medium">🟡 Medium</option><option value="high">🔴 High</option></select></div>
+        <div class="field"><label>สถานะ</label>
+          <select id="ei-status">
+            <option value="open">🔴 Open</option>
+            <option value="inprogress">🟡 In Progress</option>
+            <option value="closed">🟢 Closed</option>
+          </select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('edit-issue-modal').style.display='none'">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveEditIssue()"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT UPDATE LOG MODAL ══ -->
+<div class="modal-overlay" id="edit-log-modal" style="display:none" onclick="closeEditLogModal(event)">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--purple)"></i> แก้ไข Update Log</div>
+      <button class="modal-close" onclick="document.getElementById('edit-log-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="el-id">
+      <div class="field" style="margin-bottom:12px">
+        <label>สถานะ</label>
+        <select id="el-status">
+          <option value="open">🔴 Open</option>
+          <option value="inprogress">🟡 In Progress</option>
+          <option value="closed">🟢 Closed</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>ผู้อัพเดท</label>
+        <input type="text" id="el-by">
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>รายละเอียด *</label>
+        <textarea id="el-note" style="min-height:80px"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>Root Cause</label>
+        <textarea id="el-root"></textarea>
+      </div>
+      <div class="field">
+        <label>Corrective Action</label>
+        <textarea id="el-corrective"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('edit-log-modal').style.display='none'">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveEditLog()"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom-nav">
-  <a href="index.html"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
-  <a href="report.html"><i class="fa-solid fa-plus"></i>รายงาน</a>
+  <a href="index.html"><i class="fa-solid fa-table-columns"></i>Kanban</a>
+  <a href="propose.html"><i class="fa-solid fa-lightbulb"></i>เสนอ</a>
   <a href="update.html" class="active"><i class="fa-solid fa-pen-to-square"></i>อัพเดท</a>
   <a href="tasks.html"><i class="fa-solid fa-list-check"></i>Tasks</a>
 </nav>
-
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",
-  authDomain: "tmt-issue-tracker.firebaseapp.com",
-  projectId: "tmt-issue-tracker",
-  storageBucket: "tmt-issue-tracker.firebasestorage.app",
-  messagingSenderId: "848414004186",
-  appId: "1:848414004186:web:1ebf821c8a2dbe89e566e3"
-};
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-const db = firebase.firestore();
+const firebaseConfig={apiKey:"AIzaSyAI6IOkgZ388mERJy1H9vIZdr5YuG2eMrI",authDomain:"tmt-issue-tracker.firebaseapp.com",projectId:"tmt-issue-tracker",storageBucket:"tmt-issue-tracker.firebasestorage.app",messagingSenderId:"848414004186",appId:"1:848414004186:web:1ebf821c8a2dbe89e566e3"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
 </script>
 <script>
-let allOpen = [];
-let currentFilter = 'all';
-let currentIssueId = null;
-let selectedStatus = '';
+let allIssues=[], currentFilter='all', currentIssueId=null, selectedStatus='', currentIssueData=null, allPersons=[];
 
-function showToast(msg,dur=3000){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),dur);
-}
+function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
-// filter pill clicks
 document.querySelectorAll('.pf-btn').forEach(b=>{
   b.addEventListener('click',()=>{
     document.querySelectorAll('.pf-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    currentFilter = b.dataset.f;
-    renderPick();
+    b.classList.add('active'); currentFilter=b.dataset.f; renderPick();
   });
 });
 
+async function loadPersons(){
+  try{
+    const snap=await db.collection('master_persons').get();
+    allPersons=snap.docs.map(d=>d.data()).sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const sel=document.getElementById('ei-assignee');
+    sel.innerHTML='<option value="">— เลือก —</option>'+allPersons.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  }catch(e){}
+}
+
 async function loadOpenIssues(){
   try{
-    const snap = await db.collection('issues').get();
-    allOpen = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .filter(i=>i.status!=='closed')
+    const snap=await db.collection('issues').get();
+    allIssues=snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderPick();
-  }catch(e){
-    document.getElementById('pick-list').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>';
-  }
+  }catch(e){document.getElementById('pick-list').innerHTML='<div class="empty">โหลดไม่ได้: '+e.message+'</div>';}
 }
 
 function renderPick(){
-  const q = document.getElementById('live-search').value.trim().toLowerCase();
-  let list = allOpen;
-  if(currentFilter==='open')      list=list.filter(i=>i.status==='open');
+  const q=document.getElementById('live-search').value.trim().toLowerCase();
+  let list=allIssues;
+  if(currentFilter==='open')       list=list.filter(i=>i.status==='open');
   else if(currentFilter==='inprogress') list=list.filter(i=>i.status==='inprogress');
+  else if(currentFilter==='closed')     list=list.filter(i=>i.status==='closed');
   else if(currentFilter==='machine')    list=list.filter(i=>i.issueType==='machine');
   else if(currentFilter==='safety')     list=list.filter(i=>i.issueType==='safety');
   if(q) list=list.filter(i=>(i.title||'').toLowerCase().includes(q)||(i.assignee||'').toLowerCase().includes(q));
-
-  document.getElementById('pick-count').textContent = list.length+' รายการ';
-  if(list.length===0){
-    document.getElementById('pick-list').innerHTML='<div class="empty">ไม่พบ issue</div>';return;
-  }
+  document.getElementById('pick-count').textContent=list.length+' รายการ';
+  if(list.length===0){document.getElementById('pick-list').innerHTML='<div class="empty">ไม่พบ issue</div>';return;}
   const sevIcon={high:'🔴',medium:'🟡',low:'🟢'};
   document.getElementById('pick-list').innerHTML=list.map(i=>`
     <div class="pick-card ${i.status}" onclick="loadIssue('${i.id}')">
@@ -264,8 +325,8 @@ function renderPick(){
         <div class="pick-name">${i.title||'(ไม่มีชื่อ)'}</div>
         <div class="pick-meta">${i.lineName||'—'} · ${i.machineName||'—'} · ${i.assignee||'—'}</div>
       </div>
-      <div class="pick-right">
-        <span class="badge badge-${i.status}">${{open:'Open',inprogress:'In Progress'}[i.status]||i.status}</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <span class="badge badge-${i.status}">${{open:'Open',inprogress:'In Progress',closed:'Closed'}[i.status]||i.status}</span>
         <span style="font-size:11px">${sevIcon[i.severity]||''}</span>
       </div>
     </div>`).join('');
@@ -280,6 +341,7 @@ async function loadIssue(id){
     const doc=await db.collection('issues').doc(id).get();
     if(!doc.exists){showToast('ไม่พบ issue');return;}
     const i={id:doc.id,...doc.data()};
+    currentIssueData=i;
     const sevMap={low:'🟢 Low',medium:'🟡 Medium',high:'🔴 High'};
     document.getElementById('det-title').textContent=i.title||'—';
     document.getElementById('det-meta').textContent=`${i.lineName||'—'} · ${i.machineName||'—'}`;
@@ -294,9 +356,9 @@ async function loadIssue(id){
       <span class="chip"><i class="fa-solid fa-user"></i> ${i.assignee||'—'}</span>
       ${i.dueDate?`<span class="chip"><i class="fa-solid fa-calendar"></i> ${new Date(i.dueDate).toLocaleDateString('th-TH')}</span>`:''}
       <span class="chip">${sevMap[i.severity]||'—'}</span>`;
+    document.getElementById('tasks-link').href='tasks.html?id='+id;
     selectStatus(i.status);
     loadTimeline(id);
-    document.getElementById('tasks-link').href = 'tasks.html?id='+id;
   }catch(e){showToast('โหลดไม่ได้: '+e.message);}
 }
 
@@ -313,7 +375,7 @@ async function loadTimeline(id){
   try{
     const snap=await db.collection('updates').where('issueId','==',id).get();
     if(snap.empty){tl.innerHTML='<div class="empty">ยังไม่มีการอัพเดท</div>';return;}
-    const sorted=snap.docs.map(d=>d.data()).sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+    const sorted=snap.docs.map(d=>({docId:d.id,...d.data()})).sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
     const icon={open:'fa-circle-exclamation',inprogress:'fa-arrow-right',closed:'fa-check'};
     tl.innerHTML=sorted.map(u=>{
       const date=u.updatedAt?.toDate?.()?.toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'})||'—';
@@ -322,9 +384,13 @@ async function loadTimeline(id){
         <div class="tl-body">
           <div class="tl-action">${{open:'เปิด issue',inprogress:'อัพเดทความคืบหน้า',closed:'ปิด issue'}[u.status]||u.status}</div>
           <div class="tl-detail">${u.note||'—'}</div>
-          ${u.rootCause?`<div class="tl-detail" style="margin-top:3px"><strong>Root Cause:</strong> ${u.rootCause}</div>`:''}
+          ${u.rootCause?`<div class="tl-detail"><strong>Root Cause:</strong> ${u.rootCause}</div>`:''}
           ${u.correctiveAction?`<div class="tl-detail"><strong>Corrective:</strong> ${u.correctiveAction}</div>`:''}
           <div class="tl-time">${date} — ${u.updatedBy||'—'}</div>
+          <div class="tl-actions">
+            <button class="tl-edit-btn" onclick="openEditLog('${u.docId}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+            <button class="tl-del-btn" onclick="deleteLog('${u.docId}')"><i class="fa-solid fa-trash"></i> ลบ</button>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -360,16 +426,128 @@ async function submitUpdate(){
 }
 
 function goBack(){
-  currentIssueId=null;
+  currentIssueId=null;currentIssueData=null;
   document.getElementById('sec-update').style.display='none';
   document.getElementById('sec-pick').style.display='block';
   history.replaceState(null,'',window.location.pathname);
   window.scrollTo(0,0);
 }
 
-// preload from URL ?id=
+// ── Delete Issue ──
+async function deleteIssue(){
+  if(!currentIssueId)return;
+  if(!confirm('ลบ issue นี้ทั้งหมดรวมถึง update log?\n(ไม่สามารถกู้คืนได้)'))return;
+  try{
+    // ลบ update logs ทั้งหมดของ issue นี้
+    const logs=await db.collection('updates').where('issueId','==',currentIssueId).get();
+    const batch=db.batch();
+    logs.docs.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+    await db.collection('issues').doc(currentIssueId).delete();
+    showToast('ลบ issue แล้ว');
+    goBack();
+    loadOpenIssues();
+  }catch(e){showToast('❌ ลบไม่ได้: '+e.message);}
+}
+
+// ── Edit Issue Modal ──
+function openEditIssue(){
+  if(!currentIssueData)return;
+  const i=currentIssueData;
+  document.getElementById('ei-type').value=i.issueType||'machine';
+  document.getElementById('ei-reporter').value=i.reporter||'';
+  document.getElementById('ei-title').value=i.title||'';
+  document.getElementById('ei-desc').value=i.description||'';
+  document.getElementById('ei-init').value=i.initialAction||'';
+  document.getElementById('ei-assignee').value=i.assignee||'';
+  document.getElementById('ei-due').value=i.dueDate||'';
+  document.getElementById('ei-sev').value=i.severity||'medium';
+  document.getElementById('ei-status').value=i.status||'open';
+  document.getElementById('edit-issue-modal').style.display='flex';
+}
+
+function closeEditIssueModal(e){if(e.target===document.getElementById('edit-issue-modal'))document.getElementById('edit-issue-modal').style.display='none';}
+
+async function saveEditIssue(){
+  const title=document.getElementById('ei-title').value.trim();
+  const desc=document.getElementById('ei-desc').value.trim();
+  if(!title||!desc){showToast('⚠️ กรอกหัวข้อและรายละเอียดด้วย');return;}
+  try{
+    await db.collection('issues').doc(currentIssueId).update({
+      issueType:document.getElementById('ei-type').value,
+      reporter:document.getElementById('ei-reporter').value.trim(),
+      title,description:desc,
+      initialAction:document.getElementById('ei-init').value.trim(),
+      assignee:document.getElementById('ei-assignee').value,
+      dueDate:document.getElementById('ei-due').value||null,
+      severity:document.getElementById('ei-sev').value,
+      status:document.getElementById('ei-status').value,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ แก้ไข issue แล้ว');
+    document.getElementById('edit-issue-modal').style.display='none';
+    loadIssue(currentIssueId);
+    loadOpenIssues();
+  }catch(e){showToast('❌ บันทึกไม่ได้: '+e.message);}
+}
+
+// ── Edit / Delete Update Log ──
+let editingLogId=null;
+
+async function openEditLog(logId){
+  editingLogId=logId;
+  try{
+    const doc=await db.collection('updates').doc(logId).get();
+    if(!doc.exists)return;
+    const u=doc.data();
+    document.getElementById('el-id').value=logId;
+    document.getElementById('el-status').value=u.status||'open';
+    document.getElementById('el-by').value=u.updatedBy||'';
+    document.getElementById('el-note').value=u.note||'';
+    document.getElementById('el-root').value=u.rootCause||'';
+    document.getElementById('el-corrective').value=u.correctiveAction||'';
+    document.getElementById('edit-log-modal').style.display='flex';
+  }catch(e){showToast('โหลดไม่ได้: '+e.message);}
+}
+
+function closeEditLogModal(e){if(e.target===document.getElementById('edit-log-modal'))document.getElementById('edit-log-modal').style.display='none';}
+
+async function saveEditLog(){
+  const note=document.getElementById('el-note').value.trim();
+  if(!note){showToast('⚠️ กรอกรายละเอียดด้วย');return;}
+  try{
+    await db.collection('updates').doc(editingLogId).update({
+      status:document.getElementById('el-status').value,
+      updatedBy:document.getElementById('el-by').value.trim(),
+      note,
+      rootCause:document.getElementById('el-root').value.trim(),
+      correctiveAction:document.getElementById('el-corrective').value.trim()
+    });
+    showToast('✅ แก้ไข log แล้ว');
+    document.getElementById('edit-log-modal').style.display='none';
+    loadTimeline(currentIssueId);
+  }catch(e){showToast('❌ บันทึกไม่ได้: '+e.message);}
+}
+
+async function deleteLog(logId){
+  if(!confirm('ลบ update log นี้?'))return;
+  try{
+    await db.collection('updates').doc(logId).delete();
+    showToast('ลบ log แล้ว');
+    loadTimeline(currentIssueId);
+  }catch(e){showToast('❌ ลบไม่ได้: '+e.message);}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.getElementById('edit-issue-modal').style.display='none';
+    document.getElementById('edit-log-modal').style.display='none';
+  }
+});
+
 const urlId=new URLSearchParams(window.location.search).get('id');
-loadOpenIssues().then(()=>{ if(urlId) loadIssue(urlId); });
+loadPersons();
+loadOpenIssues().then(()=>{if(urlId)loadIssue(urlId);});
 </script>
 </body>
 </html>
