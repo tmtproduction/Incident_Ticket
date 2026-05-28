@@ -216,7 +216,7 @@ function cardHTML(i){
   const due=isOverdue(i);
   const closedDate=i.closedAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short'})||'';
   const dateStr=i.createdAt?.toDate?.()?.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})||'';
-  return`<div class="kb-card ${i.status}" onclick="openIssueModal('${i.id}')">
+  return`<div class="kb-card ${i.status}" data-id="${i.id}">
     <div class="kb-card-top">
       <div class="kb-icon ${iconCls}"><i class="fa-solid ${iconI}"></i></div>
       <div class="kb-title">${i.title||'(ไม่มีชื่อ)'}</div>
@@ -383,6 +383,12 @@ function closeModal(e){
     document.getElementById('issue-modal').style.display='none';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('issue-modal').style.display='none';});
+
+// Event delegation — รองรับ dynamic content
+document.addEventListener('click', function(e){
+  const card = e.target.closest('.kb-card[data-id]');
+  if(card) openIssueModal(card.dataset.id);
+});
 
 populateLineFilter();
 loadAll();
