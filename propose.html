@@ -36,6 +36,22 @@
 .rchip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
 .rchip.done{background:var(--green-light);color:var(--green-text)}
 .rchip.wait{background:var(--amber-light);color:var(--amber-text)}
+
+/* edit modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:var(--radius);width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--gray-border);position:sticky;top:0;background:#fff;z-index:1}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-sub);padding:4px 8px;border-radius:var(--radius-sm)}
+.modal-close:hover{background:var(--gray-bg)}
+.modal-body{padding:18px}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;bottom:0;background:#fff}
+
+/* edit btn on card */
+.prop-edit-btn{background:none;border:1px solid var(--gray-border);border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;font-family:inherit}
+.prop-edit-btn:hover{background:var(--purple-light);color:var(--purple);border-color:var(--purple)}
+.prop-del-btn{background:none;border:1px solid var(--coral-light);border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;color:var(--coral-text);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;font-family:inherit}
+.prop-del-btn:hover{background:var(--coral-light)}
 </style>
 </head>
 <body>
@@ -134,6 +150,76 @@
       <i class="fa-solid fa-list-ol"></i> ลำดับถูก lock แล้ว — นำเสนอตามลำดับในหน้า <a href="present.html" style="color:var(--purple-text);font-weight:600">ประชุม</a>
     </div>
     <div id="queue-list"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div></div>
+  </div>
+</div>
+
+<!-- ══ EDIT MODAL ══ -->
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="closeEditModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen-to-square" style="color:var(--purple)"></i> แก้ไขข้อเสนอ</div>
+      <button class="modal-close" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="e-id">
+      <div class="form-grid">
+        <div class="field">
+          <label>ประเภทปัญหา *</label>
+          <select id="e-type" onchange="onEditTypeChange()">
+            <option value="machine">🔧 เครื่องจักร</option>
+            <option value="safety">⚠️ Safety</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ชื่อผู้เสนอ *</label>
+          <input type="text" id="e-reporter" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="field">
+          <label>ไลน์ / กลุ่ม *</label>
+          <select id="e-line" onchange="onEditLineChange()">
+            <option value="">— เลือกไลน์ —</option>
+          </select>
+        </div>
+        <div class="field" id="e-machine-field">
+          <label>เครื่องจักร *</label>
+          <select id="e-machine">
+            <option value="">— เลือกไลน์ก่อน —</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>หัวข้อปัญหา *</label>
+          <input type="text" id="e-title">
+        </div>
+        <div class="field full">
+          <label>รายละเอียด *</label>
+          <textarea id="e-desc" style="min-height:80px"></textarea>
+        </div>
+        <div class="field full">
+          <label>แนวทางแก้ไขที่เสนอ</label>
+          <textarea id="e-solution"></textarea>
+        </div>
+        <div class="field">
+          <label>ระดับความเร่งด่วน</label>
+          <select id="e-sev">
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="high">🔴 High</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:10px 12px;background:var(--amber-light);border-radius:var(--radius-sm);font-size:11px;color:var(--amber-text)" id="e-warning" style="display:none">
+        <i class="fa-solid fa-triangle-exclamation"></i> ข้อเสนอนี้อยู่ในคิว present แล้ว — แก้ไขได้แต่ไม่เปลี่ยนลำดับ
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-del-prop btn btn-danger btn-sm" id="e-del-btn" onclick="deleteProposal()">
+        <i class="fa-solid fa-trash"></i> ลบข้อเสนอนี้
+      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeEditModal()">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -264,6 +350,7 @@ function propCardHTML(p,status){
     <div class="prop-right">
       ${status==='queued'?`<div class="order-badge">${p.presentOrder||'?'}</div>`:''}
       <span class="badge ${status==='queued'?'badge-inprogress':'badge-open'}">${status==='queued'?'คิว #'+p.presentOrder:'Pending'}</span>
+      <button class="prop-edit-btn" onclick="openEditModal('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
     </div>
   </div>`;
 }
@@ -282,6 +369,121 @@ async function loadCounts(){
 onTypeChange();
 loadMaster();
 loadCounts();
+
+// ── Edit Modal ──
+let editingProposal = null;
+
+async function openEditModal(id) {
+  try {
+    const doc = await db.collection('proposals').doc(id).get();
+    if (!doc.exists) { showToast('ไม่พบข้อเสนอ'); return; }
+    const p = { id: doc.id, ...doc.data() };
+    editingProposal = p;
+
+    // populate line dropdown
+    const eSel = document.getElementById('e-line');
+    eSel.innerHTML = '<option value="">— เลือกไลน์ —</option>' +
+      masterLines.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+
+    // fill values
+    document.getElementById('e-id').value = p.id;
+    document.getElementById('e-type').value = p.type || 'machine';
+    document.getElementById('e-reporter').value = p.reporter || '';
+    document.getElementById('e-title').value = p.title || '';
+    document.getElementById('e-desc').value = p.description || '';
+    document.getElementById('e-solution').value = p.proposedSolution || '';
+    document.getElementById('e-sev').value = p.severity || 'medium';
+
+    // set line then machine
+    eSel.value = p.lineId || '';
+    onEditLineChange(p.machineId);
+
+    // warning for queued
+    document.getElementById('e-warning').style.display = p.status === 'queued' ? 'block' : 'none';
+    // disable delete if queued
+    document.getElementById('e-del-btn').disabled = p.status === 'queued';
+    document.getElementById('e-del-btn').title = p.status === 'queued' ? 'ลบไม่ได้เพราะอยู่ในคิวแล้ว' : '';
+
+    onEditTypeChange();
+    document.getElementById('edit-modal').style.display = 'flex';
+  } catch(e) { showToast('โหลดไม่ได้: ' + e.message); }
+}
+
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById('edit-modal')) return;
+  document.getElementById('edit-modal').style.display = 'none';
+  editingProposal = null;
+}
+
+function onEditTypeChange() {
+  const t = document.getElementById('e-type').value;
+  document.getElementById('e-machine-field').style.display = t === 'machine' ? 'flex' : 'none';
+}
+
+function onEditLineChange(preselectMachineId) {
+  const lid = document.getElementById('e-line').value;
+  const ms = masterMachines.filter(m => m.lineId === lid);
+  const sel = document.getElementById('e-machine');
+  sel.innerHTML = '<option value="">— เลือกเครื่องจักร —</option>' +
+    ms.map(m => `<option value="${m.id}" data-name="${m.name}">${m.name}</option>`).join('');
+  if (preselectMachineId) sel.value = preselectMachineId;
+}
+
+async function saveEdit() {
+  const id = document.getElementById('e-id').value;
+  const type = document.getElementById('e-type').value;
+  const reporter = document.getElementById('e-reporter').value.trim();
+  const lineId = document.getElementById('e-line').value;
+  const lineName = document.getElementById('e-line').selectedOptions[0]?.text || '';
+  const machSel = document.getElementById('e-machine');
+  const machineId = machSel.value;
+  const machineName = machSel.selectedOptions[0]?.dataset?.name || machSel.selectedOptions[0]?.text || '';
+  const title = document.getElementById('e-title').value.trim();
+  const desc = document.getElementById('e-desc').value.trim();
+  const solution = document.getElementById('e-solution').value.trim();
+  const sev = document.getElementById('e-sev').value;
+
+  if (!type || !reporter || !lineId || !title || !desc) { showToast('⚠️ กรอกข้อมูลที่จำเป็นให้ครบ'); return; }
+  if (type === 'machine' && !machineId) { showToast('⚠️ เลือกเครื่องจักรด้วย'); return; }
+
+  try {
+    await db.collection('proposals').doc(id).update({
+      type, reporter,
+      lineId, lineName: lineName.replace(/^—\s*/, ''),
+      machineId, machineName,
+      title, description: desc,
+      proposedSolution: solution, severity: sev,
+      editedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ บันทึกการแก้ไขแล้ว');
+    document.getElementById('edit-modal').style.display = 'none';
+    editingProposal = null;
+    // refresh current tab
+    const activeTab = document.querySelector('.tab.active').id.replace('tab-','');
+    if (activeTab === 'pending') loadPending();
+    if (activeTab === 'queue') loadQueue();
+  } catch(e) { showToast('❌ บันทึกไม่สำเร็จ: ' + e.message); }
+}
+
+async function deleteProposal() {
+  const id = document.getElementById('e-id').value;
+  if (!id) return;
+  if (editingProposal?.status === 'queued') { showToast('ลบไม่ได้เพราะอยู่ในคิวแล้ว'); return; }
+  if (!confirm('ลบข้อเสนอนี้? ไม่สามารถกู้คืนได้')) return;
+  try {
+    await db.collection('proposals').doc(id).delete();
+    showToast('ลบแล้ว');
+    document.getElementById('edit-modal').style.display = 'none';
+    editingProposal = null;
+    loadPending();
+    loadCounts();
+  } catch(e) { showToast('❌ ลบไม่ได้: ' + e.message); }
+}
+
+// close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('edit-modal').style.display = 'none';
+});
 </script>
 </body>
 </html>
