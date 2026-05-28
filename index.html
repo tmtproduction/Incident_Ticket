@@ -484,29 +484,71 @@ function buildPrompt(){
   const highSev=issues.filter(i=>i.severity==='high'&&i.status!=='closed').length;
   const safetyOpen=issues.filter(i=>i.issueType==='safety'&&i.status!=='closed').length;
   const closeRate=issues.length>0?Math.round(closed.length/issues.length*100):0;
-  const avgDays=open.filter(i=>i.createdAt?.seconds).length>0?Math.round(
-    open.filter(i=>i.createdAt?.seconds).reduce((s,i)=>s+(Date.now()/1000-i.createdAt.seconds)/86400,0)
-    /open.filter(i=>i.createdAt?.seconds).length):0;
+  const avgDays=open.filter(i=>i.createdAt&&i.createdAt.seconds).length>0?Math.round(
+    open.filter(i=>i.createdAt&&i.createdAt.seconds)
+      .reduce((s,i)=>s+(Date.now()/1000-i.createdAt.seconds)/86400,0)
+    /open.filter(i=>i.createdAt&&i.createdAt.seconds).length):0;
 
-  return [
-    '\u0e04\u0e38\u0e13\u0e40\u0e1b\u0e47\u0e19\u0e17\u0e35\u0e48\u0e1b\u0e23\u0e36\u0e01\u0e29\u0e32\u0e14\u0e49\u0e32\u0e19\u0e01\u0e32\u0e23\u0e1c\u0e25\u0e34\u0e15\u0e41\u0e25\u0e30\u0e27\u0e34\u0e28\u0e27\u0e01\u0e23\u0e23\u0e21\u0e42\u0e23\u0e07\u0e07\u0e32\u0e19\u0e40\u0e2b\u0e25\u0e47\u0e01',
+  const safetyList=issues.filter(i=>i.issueType==='safety'&&i.status!=='closed')
+    .map(i=>'- '+i.title+(i.machineName?' ['+i.machineName+']':'')+(i.severity?' ('+i.severity+')':'')).join('\n')||'(ไม่มี)';
+
+  const highList=issues.filter(i=>i.severity==='high'&&i.status!=='closed')
+    .map(i=>'- '+i.title+(i.machineName?' ['+i.machineName+']':'')+(i.issueType==='safety'?' [SAFETY]':'')).join('\n')||'(ไม่มี)';
+
+  const overdueList=overdue
+    .map(i=>'- '+i.title+(i.machineName?' ['+i.machineName+']':'')+(i.assignee?' -> '+i.assignee:'')).join('\n')||'(ไม่มี)';
+
+  const lines=[
+    'คุณเป็น Safety Engineer และ Production Engineer ที่เชี่ยวชาญโรงงานเหล็ก',
+    'มีประสบการณ์ด้าน Industrial Safety, Risk Assessment และ Machine Safety',
     '',
-    '=== \u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Issue Tracker TMT Steel ===',
-    '\u0e23\u0e27\u0e21\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14: '+issues.length+' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23',
+    '=== ข้อมูล Issue Tracker TMT Steel ===',
+    'รวมทั้งหมด: '+issues.length+' รายการ',
     'Open: '+open.length+' | In Progress: '+prog.length+' | Closed: '+closed.length,
-    '\u0e40\u0e25\u0e22 Due Date: '+overdue.length+' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23',
-    '\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07\u0e2a\u0e39\u0e07 (\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e1b\u0e34\u0e14): '+highSev,
-    'Safety Issue (\u0e22\u0e31\u0e07\u0e40\u0e1b\u0e34\u0e14): '+safetyOpen,
-    '\u0e2d\u0e31\u0e15\u0e23\u0e32\u0e1b\u0e34\u0e14: '+closeRate+'% | \u0e40\u0e09\u0e25\u0e35\u0e48\u0e22\u0e27\u0e31\u0e19\u0e04\u0e49\u0e32\u0e07: '+avgDays+' \u0e27\u0e31\u0e19',
-    '\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e08\u0e31\u0e01\u0e23\u0e1b\u0e31\u0e0d\u0e2b\u0e32\u0e1a\u0e48\u0e2d\u0e22: '+(top(machineCount,5)||'-'),
-    '\u0e44\u0e25\u0e19\u0e4c\u0e1b\u0e31\u0e0d\u0e2b\u0e32\u0e1a\u0e48\u0e2d\u0e22: '+(top(lineCount,5)||'-'),
-    '\u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a\u0e1c\u0e34\u0e14\u0e0a\u0e2d\u0e1a\u0e07\u0e32\u0e19\u0e21\u0e32\u0e01: '+(top(assigneeCount,5)||'-'),
+    'อัตราปิด: '+closeRate+'% | เฉลี่ยวันค้าง: '+avgDays+' วัน',
     '',
-    '\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e40\u0e1b\u0e47\u0e19\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 \u0e41\u0e1a\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19 3 \u0e2a\u0e48\u0e27\u0e19:',
-    '1. \u0e2a\u0e23\u0e38\u0e1b\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21 (2-3 \u0e1b\u0e23\u0e30\u0e42\u0e22\u0e04)',
-    '2. \u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e48\u0e22\u0e07\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e23\u0e48\u0e07\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 (bullet points)',
-    '3. \u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e1b\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e38\u0e07 (bullet points \u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33)'
-  ].join('\n');
+    '--- Safety Issues ที่ยังเปิดอยู่ ('+safetyOpen+' รายการ) ---',
+    safetyList,
+    '',
+    '--- Issues ความเร่งด่วนสูง ที่ยังไม่ปิด ('+highSev+' รายการ) ---',
+    highList,
+    '',
+    '--- Issues ที่เลย Due Date ('+overdue.length+' รายการ) ---',
+    overdueList,
+    '',
+    '--- เครื่องจักรที่มีปัญหาบ่อย (open issues) ---',
+    top(machineCount,8)||'-',
+    '',
+    '--- ไลน์การผลิตที่มีปัญหา ---',
+    top(lineCount,5)||'-',
+    '',
+    '--- ผู้รับผิดชอบที่มีภาระงานมาก ---',
+    top(assigneeCount,5)||'-',
+    '',
+    '=== โปรดวิเคราะห์สรุปเป็นภาษาไทย สำหรับผู้บริหาร เน้นมุมมองด้าน Safety ===',
+    '',
+    '1. สรุปสถานการณ์ความปลอดภัยโดยรวม',
+    'ประเมินระดับความเสี่ยงรวม (สูง/กลาง/ต่ำ) พร้อมเหตุผลจากข้อมูล',
+    '',
+    '2. ความเสี่ยงต่อคนทำงาน',
+    '- ระบุ issue ที่อาจเป็นอันตรายต่อพนักงาน (บาดเจ็บ สัมผัสอันตราย อุบัติเหตุ)',
+    '- ประเมินความน่าจะเป็นและความรุนแรงของแต่ละความเสี่ยง',
+    '- ระบุว่าใครที่เสี่ยงมากที่สุด (ผู้รับผิดชอบที่มีงาน Safety ค้างมาก)',
+    '',
+    '3. ความเสี่ยงต่อเครื่องจักรและสายการผลิต',
+    '- Issue ใดที่หากปล่อยไว้จะทำให้เครื่องเสียหายหนักหรือหยุดสายการผลิต',
+    '- ระบุเครื่องจักรที่เป็น single point of failure',
+    '- ประเมินความเสียหายที่อาจเกิด (ต้นทุนซ่อม, downtime)',
+    '',
+    '4. โอกาสปรับปรุงด้าน Safety',
+    '- มาตรการ Preventive ที่ควรทำก่อนเกิดเหตุ',
+    '- Engineering Control หรือ Process ที่ลด Risk ได้จริง',
+    '- โอกาสสร้าง Safety culture ที่ดีขึ้นจากข้อมูลที่เห็น',
+    '',
+    '5. Action Priority (เร่งด่วนสุด 5 อันดับ)',
+    'เรียงจากเร่งด่วนสุด พร้อมเหตุผลด้าน Safety และผู้รับผิดชอบที่ควร action'
+  ];
+  return lines.join('\n');
 }
 
 function openClaudeModal(){
